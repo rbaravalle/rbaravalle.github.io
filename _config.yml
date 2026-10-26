@@ -3,3 +3,10 @@ description: Robotics, perception, and ML
 url: "https://rbaravalle.github.io"
 baseurl: ""
 theme: minima
+
+# Order of the links in the top bar
+header_pages:
+  - index.md
+  - blog.md
+  - about.md
+  - contact.md

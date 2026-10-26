@@ -1,0 +1,51 @@
+---
+# The empty front matter above is required: it makes Jekyll compile this file.
+---
+
+// Palette. Change these and everything else follows.
+$background-color: #1b1f2a;
+$text-color:       #d6dae4;
+$brand-color:      #7fb4ff;   // links
+$grey-color:       #8a93a6;
+$grey-color-light: #343b4d;   // borders, table stripes
+$grey-color-dark:  #aeb6c8;   // site title, secondary text
+
+// Pull in the minima theme using the palette above.
+@import "minima";
+
+// Extra overrides for parts minima hard-codes in light colours.
+body {
+  background-color: $background-color;
+}
+
+.site-header,
+.site-footer {
+  border-color: $grey-color-light;
+}
+
+a:hover {
+  color: lighten($brand-color, 12%);
+}
+
+pre,
+code,
+.highlight {
+  background-color: #11141b;
+  color: $text-color;
+  border-color: $grey-color-light;
+}
+
+blockquote {
+  color: $grey-color-dark;
+  border-left-color: $grey-color-light;
+}
+
+table,
+th,
+td {
+  border-color: $grey-color-light;
+}
+
+tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.03);
+}

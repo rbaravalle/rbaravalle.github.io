@@ -4,6 +4,5 @@ title: Contact
 permalink: /contact/
 ---
 
-Placeholder: contact details will go here.
-
-In the meantime, you can find me on [LinkedIn](https://www.linkedin.com/in/rodrigo-baravalle/).
+- **LinkedIn:** [linkedin.com/in/rodrigo-baravalle](https://www.linkedin.com/in/rodrigo-baravalle/)
+- **Email:** [rbaravalle@gmail.com](mailto:rbaravalle@gmail.com)

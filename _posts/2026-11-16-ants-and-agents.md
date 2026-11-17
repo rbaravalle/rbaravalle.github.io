@@ -55,6 +55,23 @@ and the results were... limited.
 
 I put up a simple python script that updated on every turn, trying to simulate the emergent behavior observed on ants for fun - I did not reach out to papers or any study. After some time I forgot about it as the results were not as expected. This took me some time - maybe a couple of days.
 
+<figure style="margin: 1.5em 0; text-align: center;">
+  <img src="{{ '/assets/ants/img/python-original.gif' | relative_url }}"
+       width="320" height="320" style="border-radius: 4px; display: block; margin: 0 auto;"
+       alt="My old Python simulation: a white field of food with black specks where ants have eaten, and a grey band of queens across the middle. No paths form.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    My old Python version, running again today. White is food, black is where
+    ants have eaten, the grey band is the queens.
+    (<a href="{{ '/assets/ants/python/ants_original_py2.py' | relative_url }}">original code</a>,
+    <a href="{{ '/assets/ants/python/ants.py' | relative_url }}">Python 3 port</a>)
+  </figcaption>
+</figure>
+
+Looking at it again now, the reason is clear: my ants never left anything
+behind for each other. Each one wandered on its own, and nothing told the next
+ant where food had been found or where home was. Without a shared trail, there
+was nothing for a path to form from.
+
 More recently I gave that code to a couple of AI chat assistants. It got
 better, but the result was not as clean. Faster results, but still not as expected.
 
@@ -70,7 +87,7 @@ My job moved from typing code to describing what I wanted, looking at results, a
 
 ## The build
 
-Conrad/Claude did everything from one prompt. I am not claiming I used every concept on agentic programming (MCP, RAG, etc. this is being used anyway but for this project I do not need to get into this...). I just paid for a monthly suscription and asked for something!
+Conrad/Claude did almost everything from one short request. I am not claiming I used every concept on agentic programming (MCP, RAG, etc. this is being used anyway but for this project I do not need to get into this...). I just paid for a monthly subscription and asked for something!
 
 I saw the system working autonomously for approx. 30 minutes. The process Claude did was actually very similar to mine, but the agent kept going and succeeded in the end.
 
@@ -173,7 +190,7 @@ Things to try in the working version at the top (with **Trails** ticked):
 
 I love this. This is exactly what a computer should be about and what I think was the original idea when people start building these machines.
 
-The agent (Claude) decided everything from a single prompt and succeeded in 30 minutes. It took me a couple of days just to fail and several (shy) attempts through the years. This changes everything. We have much more power to experiment with ideas. I would never had enough time to do this myself.
+The agent (Claude) decided almost everything from one short request and succeeded in 30 minutes. It took me a couple of days just to fail and several (shy) attempts through the years. This changes everything. We have much more power to experiment with ideas. I would never have had enough time to do this myself.
 I wonder how far can this go. I may be limited by my own imagination here.
 
 There is a nice symmetry/irony here. The ants are simple agents running a loop

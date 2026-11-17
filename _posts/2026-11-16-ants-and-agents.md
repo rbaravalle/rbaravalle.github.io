@@ -16,9 +16,6 @@ You switch him on, he starts talking, and from then on you *ask* him for
 things. Depending on which page you turn to, he helps you solve crimes or
 brings the Army to your door.
 
-> ✏️ Your own connection to the book: when you read it, what Conrad meant to
-> a kid who was (or was about to become) a programmer.
-
 <figure style="margin: 1.5em 0;">
   <img src="{{ '/assets/ants/img/supercomputer-back-cover.jpg' | relative_url }}"
        style="border-radius: 4px;"
@@ -30,10 +27,15 @@ brings the Army to your door.
   </figcaption>
 </figure>
 
-For forty years that was pure fiction. Programming meant telling the machine
-*how*, line by line. Lately it feels like we are getting close to Conrad:
-describe *what* you want, and watch it get done. This post is about my first
-real try at that, and about ants.
+As a kid, this book caught my full attention. I still share that wonder: I
+have always liked computers for their magic capabilities. These days, that
+magic is very tangible. With AI you can literally ask for whatever you want,
+and it gets built. I feel we could even win a million dollars, like in the
+book, if we know how to use it properly.
+
+Programming used to mean telling the machine *how*, line by line. More and
+more, we can just tell it *what*. This post is about my first real try at
+that, and about ants.
 
 Five hundred ants, a nest, and some food. No ant knows where the food is, no
 ant knows where the others are going, and there is no leader:

@@ -3,12 +3,6 @@ title: "Emergent behavior and agentic magic programming"
 date: 2026-11-16
 ---
 
-<!--
-DRAFT. Paragraphs marked ✏️ are placeholders for your own words: your
-experience, your opinions. Everything else is a starting point; rewrite freely.
-Delete this comment and the ✏️ notes before publishing.
--->
-
 In 1984 Edward Packard published *Supercomputer*, number 39 in the
 *Choose Your Own Adventure* series. You win a programming contest, and the
 prize is a computer called Conrad. Conrad doesn't wait for you to write code.

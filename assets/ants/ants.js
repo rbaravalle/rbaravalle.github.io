@@ -26,7 +26,7 @@
 
   var DEFAULTS = {
     ants: 500,
-    stepsPerFrame: 2,
+    stepsPerFrame: 0.5,          // simulation steps per animation frame (can be < 1)
     speed: 1.0,                  // cells per step
     sensorDist: 7,               // cells ahead
     sensorAngle: 0.55,           // radians
@@ -43,7 +43,7 @@
     seeRadius: 10,               // ants spot a target directly within this range
     foodAmount: 1500,
     respawnFood: true,           // when a source runs out, a new one appears elsewhere
-    showTrails: true,
+    showTrails: false,
     showAnts: true
   };
 
@@ -282,6 +282,7 @@
     '.ant-sim button:hover{background:#465069}' +
     '.ant-sim label{display:flex;align-items:center;gap:6px;white-space:nowrap}' +
     '.ant-sim input[type=range]{width:110px}' +
+    '.ant-sim .as-speed{min-width:3.2em;color:#8a93a6;font-variant-numeric:tabular-nums}' +
     '.ant-sim .as-stats{margin-left:auto;color:#8a93a6;font-variant-numeric:tabular-nums}' +
     '.ant-sim .as-legend{margin-top:6px;color:#8a93a6;font-size:13px}' +
     '.ant-sim .as-dot{display:inline-block;width:9px;height:9px;border-radius:50%;' +
@@ -337,8 +338,15 @@
     slider(controls, 'Ants', 50, 1500, 50, sim.p.ants, function (v) { sim.setAntCount(v); });
     slider(controls, 'Evaporation', 0.001, 0.03, 0.001, sim.p.evaporation,
       function (v) { sim.p.evaporation = v; });
-    slider(controls, 'Speed', 1, 8, 1, sim.p.stepsPerFrame,
-      function (v) { sim.p.stepsPerFrame = v; });
+    var SPEEDS = [0.1, 0.25, 0.5, 1, 2, 4, 8];
+    var speedIdx = 0;
+    for (var si = 0; si < SPEEDS.length; si++) if (SPEEDS[si] <= sim.p.stepsPerFrame) speedIdx = si;
+    var speedInput = slider(controls, 'Speed', 0, SPEEDS.length - 1, 1, speedIdx, function (v) {
+      sim.p.stepsPerFrame = SPEEDS[v];
+      speedOut.textContent = '\u00d7' + SPEEDS[v];
+    });
+    var speedOut = el('span', { 'class': 'as-speed', text: '\u00d7' + SPEEDS[speedIdx] },
+      speedInput.parentNode);
 
     var trailsLab = el('label', {}, controls);
     var trailsBox = el('input', { type: 'checkbox' }, trailsLab);
@@ -374,9 +382,12 @@
       playBtn.textContent = 'Play';
     }
 
+    var stepBudget = 0;
     function frame() {
       if (running && visible) {
-        for (var i = 0; i < sim.p.stepsPerFrame; i++) sim.step();
+        // Fractional speeds: accumulate, so 0.25 means one step every 4 frames.
+        stepBudget += sim.p.stepsPerFrame;
+        while (stepBudget >= 1) { sim.step(); stepBudget -= 1; }
       }
       if (visible) {
         renderer.draw();

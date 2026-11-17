@@ -1,5 +1,5 @@
 ---
-title: "Ants, trails, and my first try at agentic programming"
+title: "Emergent behavior and agentic magic programming"
 date: 2026-11-16
 ---
 
@@ -9,19 +9,41 @@ experience, your opinions. Everything else is a starting point; rewrite freely.
 Delete this comment and the ✏️ notes before publishing.
 -->
 
+In 1984 Edward Packard published *Supercomputer*, number 39 in the
+*Choose Your Own Adventure* series. You win a programming contest, and the
+prize is a computer called Conrad. Conrad doesn't wait for you to write code.
+You switch him on, he starts talking, and from then on you *ask* him for
+things. Depending on which page you turn to, he helps you solve crimes or
+brings the Army to your door.
+
+> ✏️ Your own connection to the book: when you read it, what Conrad meant to
+> a kid who was (or was about to become) a programmer.
+
+<!-- ✏️ Image: a photo of your own copy works best (and avoids copyright
+issues with scans from the web). Save it as assets/ants/img/supercomputer.jpg
+and remove the comment markers around the next line.
+![My copy of Supercomputer, Choose Your Own Adventure #39]({{ '/assets/ants/img/supercomputer.jpg' | relative_url }})
+-->
+
+For forty years that was pure fiction. Programming meant telling the machine
+*how*, line by line. Lately it feels like we are getting close to Conrad:
+describe *what* you want, and watch it get done. This post is about my first
+real try at that, and about ants.
+
 Five hundred ants, a nest, and some food. No ant knows where the food is, no
-ant knows where the others are going, and there is no leader. At first it's
-chaos. Give it twenty seconds or so:
+ant knows where the others are going, and there is no leader:
 
 <div data-ant-sim></div>
 <script src="{{ '/assets/ants/ants.js' | relative_url }}"></script>
 
-The bright highways that form between the nest and the food are not drawn by
-anyone. They *emerge* from a handful of rules each ant follows on its own.
+At first it's chaos. Give it a minute (or turn up the speed) and watch the ants
+line up into streams between the nest and the food. Then tick **Trails** to
+see the invisible pheromone map they are reading. Nobody draws those
+highways. They *emerge* from a handful of rules each ant follows on its own.
 Click anywhere to drop new food and watch the colony re-route.
 
-This post is about two things: how those trails form, and how I built this,
-which was my first real attempt at *agentic programming*.
+So this post is about two things: how those trails form, and how I built
+this simulation, which was my first real attempt at *agentic programming*.
 
 ## Where I started
 
@@ -140,7 +162,7 @@ the ants commit to trails and then get stuck on them once the food runs out:
 
 <div data-ant-sim='{"senseMin":0,"patience":1e9,"depositTau":250,"foodAmount":400,"respawnFood":false,"reinforceCap":1e9,"evaporation":0.006}'></div>
 
-Things to try in the working version at the top:
+Things to try in the working version at the top (with **Trails** ticked):
 
 - **Evaporation all the way down:** old trails never die, the map turns into
   fog, and before long the colony locks itself into a loop and stops

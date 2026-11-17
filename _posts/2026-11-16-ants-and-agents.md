@@ -6,8 +6,8 @@ date: 2026-11-16
 In 1984 Edward Packard published *Supercomputer*, number 39 in the
 *Choose Your Own Adventure* series. You win a programming contest, and the
 prize is a computer called Conrad. Conrad doesn't wait for you to write code.
-You switch him on, he starts talking, and from then on you *ask* him for
-things. Depending on which page you turn to, he helps you solve crimes or
+You switch it on, it starts talking, and from then on you *ask* for
+things. Depending on which page you turn to, Conrad helps you solve crimes or
 brings the Army to your door.
 
 <figure style="margin: 1.5em 0;">
@@ -23,13 +23,13 @@ brings the Army to your door.
 
 As a kid, this book caught my full attention. I still share that wonder: I
 have always liked computers for their magic capabilities. These days, that
-magic is very tangible. With AI you can literally ask for whatever you want,
-and it gets built. I feel we could even win a million dollars, like in the
+magic is very tangible. With recent AI (I now realize the company was called Genecomp AI..) you can literally ask for whatever you want,
+and it gets built. I feel we could even win a million dollars, as in the
 book, if we know how to use it properly.
 
-Programming used to mean telling the machine *how*, line by line. More and
+Programming used to mean telling the machine *how*, line by line. Any deviation from expectations and the unforgiving flexibility of the process sent you to failure. More and
 more, we can just tell it *what*. This post is about my first real try at
-that, and about ants.
+that, and about ants behaviors. Why? they also have magic properties.
 
 Five hundred ants, a nest, and some food. No ant knows where the food is, no
 ant knows where the others are going, and there is no leader:
@@ -46,14 +46,13 @@ Click anywhere to drop new food and watch the colony re-route.
 So this post is about two things: how those trails form, and how I built
 this simulation, which was my first real attempt at *agentic programming*.
 
-## Where I started
+## Initial attempts
 
 I have coded for more than 20 years, and AI assisted coding is a recent novelty I am starting to grasp.
-
 I have tried this ant simulation before. Years ago I wrote a version in Python,
 and the results were... limited.
 
-I put up a simple python script that updated on every turn, trying to simulate the emergent behavior observed on ants for fun - I did not reach out to papers or any study. After some time I forgot about it as the results were not as expected. This took me some time - maybe a couple of days.
+I did not want to spend tons of hours just setting everything up. I only wanted to see the magic, the behavior emerge.. so I put up a simple python script that updated on every turn, trying to simulate the emergent behavior observed on ants for fun - I did not reach out to papers or any study either. After some time I forgot about it as the results were not as expected. This took me some time - maybe a couple of days.
 
 <figure style="margin: 1.5em 0; text-align: center;">
   <img src="{{ '/assets/ants/img/python-original.gif' | relative_url }}"
@@ -67,13 +66,13 @@ I put up a simple python script that updated on every turn, trying to simulate t
   </figcaption>
 </figure>
 
-Looking at it again now, the reason is clear: in this first version my ants
+Looking at it again now, the reason for failure seems clear: in this first version my ants
 never left anything behind for each other. Each one wandered on its own, and
 nothing told the next ant where food had been found or where home was. Without
 a shared trail, there was nothing for a path to form from.
 
-In 2016 I came back to it with a second attempt, `antsCamino` (*camino* is
-Spanish for path). This time the ants did leave a mark: every step added to a
+In 2016 I came back to it with a second attempt. Add a trail.
+This time the ants did leave a mark: every step added to a
 shared "paths" map, the map slowly faded, and each ant steered toward the
 most-walked cell next to it. And paths did form!
 
@@ -89,7 +88,7 @@ most-walked cell next to it. And paths did form!
   </figcaption>
 </figure>
 
-But look at where they go: nowhere in particular. The lines connect neither
+But they go nowhere in particular. The lines connect neither
 the food nor the queens. Running it again today, in two runs of 1,000 frames,
 about 85% of the ants were locked onto those lines by frame 300, eating
 stopped, and not a single piece of food reached a queen. Every step counted
@@ -97,17 +96,20 @@ the same, so a busy cell got busier whether or not it led anywhere. The map
 recorded *traffic*, not *information*. Keep that in mind: the AI agent ran
 into the very same trap later in this story.
 
-More recently I gave that code to a couple of AI chat assistants (ChatGPT
+### AI to the rescue
+
+Last year, I started to be increasingly aware that AI got much better at coding, so I thought it could help me and maybe my "dream" would come true.
+I gave my code to a couple of AI chat assistants (ChatGPT
 first, then Gemini), and
 iterated: run it, look at it, paste back what was wrong, ask for changes. I
-did this a couple of times. Looking back, *I* was the agent. It got better,
-but the result was not as clean. Faster results, but still not as expected.
+did this a couple of times. Looking back, *I* was an agent. Results got better,
+but the emergence was not there. 
 
 Running the versions I kept shows how it went. I gave my first script to
 ChatGPT, and in what came back, the ants
 leave the nest (blue square) and huddle in a clump right next to it, far from
 the food (green). In 2,000 steps they brought home between 1 and 3 pieces of
-food.
+food. How frustrating!!
 
 <figure style="margin: 1.5em 0; text-align: center;">
   <img src="{{ '/assets/ants/img/chatbot-early.gif' | relative_url }}"
@@ -160,9 +162,9 @@ before anyone can follow them: the fix worked by switching off the very
 mechanism the paths were supposed to come from. The "gentle nudge" turned out
 to be doing most of the work. Nobody measured any of it. The chatbot could
 not run the code, and I, the human in the loop, only looked at the animation
-and moved on.
+and moved on. I got increasingly frustrated and I dropped it for another year. Not even the AI could help me!
 
-## What "agentic" means (for someone like me)
+## Agentic AI
 
 With a chat assistant, you paste code in, get code back, run it yourself,
 and paste the errors back. You are the loop.
@@ -170,13 +172,23 @@ and paste the errors back. You are the loop.
 With an *agent*, the AI is in the loop. It can read and write files, run the
 code, *look at the output* (in this case, screenshots of the simulation it took
 itself in a headless browser), and decide what to do next. This is the magic I am talking about.
-My job moved from typing code to describing what I wanted, looking at results, and steering - I feel I am in the book asking Conrad things and complaining when I get "too rich".
+My job moved from having to learn boilerplate technologies to visualize something to describing what I wanted, looking at results, and steering - I feel I am in the book asking Conrad things and complaining when I get "too rich". I moved the main frustration to the agent (sorry!).
 
-## The build
+## It worked
 
-Conrad/Claude did almost everything from one short request. I am not claiming I used every concept on agentic programming (MCP, RAG, etc. this is being used anyway but for this project I do not need to get into this...). I just paid for a monthly subscription and asked for something!
+My approximate prompt, I did not give Claude (Opus 5.5 medium) the earlier versions so it started from scratch!
+
+> **I want to do a visualization of emergent behavior for "ants" - maybe we discussed this already - as they take "food" from a source through a "nest". I did this in python in the past - with limited results. I also tried giving my code to gemini and maybe you and it was working better, however the paths were not so clear. I want in the end to see paths forming between the foods and nests.**
+
+In the next prompt I just confirmed a javascript/html version was ok as I wanted to put this as part of the blog.
+
+Conrad/Claude did almost everything from this short request. I am not claiming I used every concept on agentic programming (MCP, RAG, etc. this is being used by Claude anyway but for this project I do not need to get into them myself...). I just paid for a monthly subscription and asked for something!
 
 I saw the system working autonomously for approx. 30 minutes. The process Claude did was actually very similar to mine, but the agent kept going and succeeded in the end.
+
+Claude also explained everything and how it tried several things.
+
+### Claude Details
 
 The first version came together quickly: ants with two states (searching for
 food / carrying food home), two pheromone grids, evaporation, and three
@@ -192,10 +204,10 @@ every time, even with food still on the map.
 
 This turns out to be a real thing. Army ants can fall into an
 [ant mill](https://en.wikipedia.org/wiki/Ant_mill): a circle of ants each
-following the one in front, sometimes until they die of exhaustion. My
+following the one in front, sometimes until they die of exhaustion. The
 simulation had reproduced a famous failure of real ant colonies.
 
-The agent found two causes:
+Claude agent found two causes:
 
 1. **Ants followed any smell, however faint.** Comparing left/center/right
    sensors works the same whether the values are 5.0 or 0.0001, so
@@ -210,7 +222,7 @@ loops of ants, detached from both nest and food:
 
 ![A self-sustaining loop of ants circling with food right next to it]({{ '/assets/ants/img/mill-loop.jpg' | relative_url }})
 
-The fix for this one was the most interesting part of the project. The ants in
+The fix for this one was the most interesting part of the project, Claude comments. The ants in
 the loop were each laying only a *tiny* amount of pheromone (they had left the
 nest long ago), but there were hundreds of them, and tiny amounts add up. The
 crowd alone kept the loop alive. The solution: an ant can only reinforce a
@@ -230,7 +242,7 @@ measured, and the agent did the measuring itself.
 
 ## How the trails form
 
-Every ant follows the same rules:
+Finally, after a decade (!) these rules were found, every ant follows the same rules. If I persisted it could have taken me an enormous amount of time - maybe months? how big is the parameter space Claude searched?
 
 1. **Two states.** An ant is either *searching* for food or *returning* home
    with it.
@@ -280,11 +292,11 @@ Things to try in the working version at the top (with **Trails** ticked):
 ## What I take away
 
 I love this. This is exactly what a computer should be about and what I think was the original idea when people start building these machines.
+You can argue I did not succeed in getting the right rules myself and that I missed all that fun. I argue I had a lot of fun seeing the magic of the agent discovering everything, unblocking my previous issues and frustrations, and also enjoying the result of seeing the ant trails emergence I craved.
 
-The agent (Claude) decided almost everything from one short request and succeeded in 30 minutes. It took me a couple of days just to fail and several (shy) attempts through the years. This changes everything. We have much more power to experiment with ideas. I would never have had enough time to do this myself.
-I wonder how far can this go. I may be limited by my own imagination here.
+The agent (Claude) decided almost everything from one short request and succeeded in 30 minutes. It took me a couple of days just to fail and several (shy) attempts through the years. This changes everything. We have much more power to experiment with ideas and have fun with that, even if we are not the executors of endless trials and errors. I would never have had enough time to do this myself, and now I can move on and think on my next "crazy" idea: in the past I would have thought it was going to be so complex that it was not worth the time, now I know I can see agents experimenting with them. Magic here, there, everywhere.
 
-There is a nice symmetry/irony here. The ants are simple agents running a loop
+There is a nice symmetry/irony here. The ants are also simple agents running a loop
 (sense, act, leave a trace), and something capable comes out of the whole.
 The AI agent was also a loop (read, change, run, look), and something useful
 came out of that too. In both cases, the interesting part was not any single
@@ -292,4 +304,8 @@ step but the feedback.
 
 The code is a single JavaScript file with no dependencies:
 [ants.js]({{ '/assets/ants/ants.js' | relative_url }}).
-This code could be improved but that is not the main topic of this post.
+This code could be improved but that is not the main topic of this post (I could ask Claude to improve it).
+
+Also, finally, Claude did the first draft of the post and I just iterated. Fantastic.
+
+"Claude, please, I want a million dollars now".

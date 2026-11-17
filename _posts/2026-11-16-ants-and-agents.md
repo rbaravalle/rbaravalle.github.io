@@ -23,13 +23,13 @@ brings the Army to your door.
 
 As a kid, this book caught my full attention. I still share that wonder: I
 have always liked computers for their magic capabilities. These days, that
-magic is very tangible. With recent AI (I now realize the company was called Genecomp AI..) you can literally ask for whatever you want,
+magic is very tangible. With recent AI (I now realize the computer was a Genecomp *AI* 32) you can literally ask for whatever you want,
 and it gets built. I feel we could even win a million dollars, as in the
 book, if we know how to use it properly.
 
-Programming used to mean telling the machine *how*, line by line. Any deviation from expectations and the unforgiving flexibility of the process sent you to failure. More and
+Programming used to mean telling the machine *how*, line by line. Any deviation from expectations and the unforgiving rigidity of the process sent you to failure. More and
 more, we can just tell it *what*. This post is about my first real try at
-that, and about ants behaviors. Why? they also have magic properties.
+that, and about ant behavior. Why? Ants also have magic properties.
 
 Five hundred ants, a nest, and some food. No ant knows where the food is, no
 ant knows where the others are going, and there is no leader:
@@ -48,11 +48,11 @@ this simulation, which was my first real attempt at *agentic programming*.
 
 ## Initial attempts
 
-I have coded for more than 20 years, and AI assisted coding is a recent novelty I am starting to grasp.
+I have coded for more than 20 years, and AI-assisted coding is a recent novelty I am starting to grasp.
 I have tried this ant simulation before. Years ago I wrote a version in Python,
 and the results were... limited.
 
-I did not want to spend tons of hours just setting everything up. I only wanted to see the magic, the behavior emerge.. so I put up a simple python script that updated on every turn, trying to simulate the emergent behavior observed on ants for fun - I did not reach out to papers or any study either. After some time I forgot about it as the results were not as expected. This took me some time - maybe a couple of days.
+I did not want to spend tons of hours just setting everything up. I only wanted to see the magic, the behavior emerge. So I put up a simple Python script that updated on every turn, trying to simulate the emergent behavior observed on ants for fun - I did not reach out to papers or any study either. After some time I forgot about it as the results were not as expected. This took me some time - maybe a couple of days.
 
 <figure style="margin: 1.5em 0; text-align: center;">
   <img src="{{ '/assets/ants/img/python-original.gif' | relative_url }}"
@@ -182,7 +182,7 @@ My approximate prompt, I did not give Claude (Opus 5.5 medium) the earlier versi
 
 In the next prompt I just confirmed a javascript/html version was ok as I wanted to put this as part of the blog.
 
-Conrad/Claude did almost everything from this short request. I am not claiming I used every concept on agentic programming (MCP, RAG, etc. this is being used by Claude anyway but for this project I do not need to get into them myself...). I just paid for a monthly subscription and asked for something!
+Conrad/Claude did almost everything from this short request. I am not claiming I used every concept on agentic programming (MCP and friends: Claude uses some of this under the hood, but for this project I did not need to get into it myself). I just paid for a monthly subscription and asked for something!
 
 I saw the system working autonomously for approx. 30 minutes. The process Claude did was actually very similar to mine, but the agent kept going and succeeded in the end.
 
@@ -207,18 +207,11 @@ This turns out to be a real thing. Army ants can fall into an
 following the one in front, sometimes until they die of exhaustion. The
 simulation had reproduced a famous failure of real ant colonies.
 
-Claude agent found two causes:
-
-1. **Ants followed any smell, however faint.** Comparing left/center/right
-   sensors works the same whether the values are 5.0 or 0.0001, so
-   near-invisible old pheromone still steered them. Fix: ignore pheromone
-   below a threshold.
-2. **Ants never gave up.** A searching ant that wandered forever kept laying
-   trail. Fix: after a while without finding food, an ant goes home and starts
-   over.
-
-That made a huge difference, but a second, sneakier mill appeared: whole
-loops of ants, detached from both nest and food:
+Claude found two causes: ants followed any smell, however faint, and they
+never gave up searching. The fixes were to ignore very weak pheromone and to
+send ants home after a while without finding food. That made a huge
+difference, but a second, sneakier mill appeared: whole loops of ants,
+detached from both nest and food:
 
 ![A self-sustaining loop of ants circling with food right next to it]({{ '/assets/ants/img/mill-loop.jpg' | relative_url }})
 
@@ -242,7 +235,54 @@ measured, and the agent did the measuring itself.
 
 ## How the trails form
 
-Finally, after a decade (!) these rules were found, every ant follows the same rules. If I persisted it could have taken me an enormous amount of time - maybe months? how big is the parameter space Claude searched?
+Finally, after a decade (!), the trails emerge. The ideas behind them are not
+new: two pheromones and "smell sensors" are well known from research on ant
+colony algorithms going back to the early 1990s (I never looked at the
+literature, remember?). What the agent did was make them actually work here.
+
+How much searching did that take? Less than I expected: about 20
+configurations in around 150 simulation runs, and three rule changes that
+made the difference (ignore very faint smells, give up after a while, and cap
+how much a single ant can reinforce a trail).
+
+The heart of it is two simple rules. Ants lay less pheromone the longer it has
+been since they left the nest or the food, and pheromone evaporates. A short
+route to food gets walked more often per unit of time *and* gets stronger
+deposits, so it gets reinforced faster than evaporation can erase it. Long
+routes fade. The colony finds good paths without any ant knowing what a path
+is. (The full list of rules is at the end of the post.)
+
+![Early exploration: a web of faint trails]({{ '/assets/ants/img/v2-exploring.jpg' | relative_url }})
+
+![A few thousand steps later: highways]({{ '/assets/ants/img/v2-highways.jpg' | relative_url }})
+
+## What I take away
+
+I love this. This is exactly what a computer should be about and what I think was the original idea when people started building these machines.
+You can argue I did not succeed in getting the right rules myself and that I missed all that fun. I argue I had a lot of fun seeing the magic of the agent discovering everything, unblocking my previous issues and frustrations, and also enjoying the result of seeing the ant trails emergence I craved.
+
+The agent (Claude) decided almost everything from one short request and succeeded in 30 minutes. It took me a couple of days just to fail and several (shy) attempts through the years. This changes everything. We have much more power to experiment with ideas and have fun with that, even if we are not the executors of endless trials and errors. I would never have had enough time to do this myself, and now I can move on and think about my next "crazy" idea: in the past I would have thought it was going to be so complex that it was not worth the time, now I know I can see agents experimenting with them. Magic here, there, everywhere.
+
+There is a nice symmetry/irony here. The ants are also simple agents running a loop
+(sense, act, leave a trace), and something capable comes out of the whole.
+The AI agent was also a loop (read, change, run, look), and something useful
+came out of that too. In both cases, the interesting part was not any single
+step but the feedback.
+
+The code is a single JavaScript file with no dependencies:
+[ants.js]({{ '/assets/ants/ants.js' | relative_url }}).
+This code could be improved but that is not the main topic of this post (I could ask Claude to improve it).
+
+Also, finally, Claude did the first draft of the post and I just iterated. Fantastic.
+
+Next: how does an agent like this actually work inside? I'm going to try
+building a tiny one.
+
+"Claude, please, I want a million dollars now".
+
+## Appendix: the rules, and things to try
+
+Every ant follows the same rules:
 
 1. **Two states.** An ant is either *searching* for food or *returning* home
    with it.
@@ -261,22 +301,6 @@ Finally, after a decade (!) these rules were found, every ant follows the same r
 7. **Give up, and don't shout.** Ants that searched too long go home;
    reinforcement is capped by how fresh the ant's information is.
 
-Rules 5 and 6 together are the heart of it. A short route to food gets walked
-more often per unit of time *and* gets stronger deposits, so it gets
-reinforced faster than evaporation can erase it. Long routes fade. The colony
-finds good paths without any ant knowing what a path is.
-
-![Early exploration: a web of faint trails]({{ '/assets/ants/img/v2-exploring.jpg' | relative_url }})
-
-![A few thousand steps later: highways]({{ '/assets/ants/img/v2-highways.jpg' | relative_url }})
-
-## See it fail yourself
-
-Here is the first version again, with the three fixes switched off. Watch
-the ants commit to trails and then get stuck on them once the food runs out:
-
-<div data-ant-sim='{"senseMin":0,"patience":1e9,"depositTau":250,"foodAmount":400,"respawnFood":false,"reinforceCap":1e9,"evaporation":0.006}'></div>
-
 Things to try in the working version at the top (with **Trails** ticked):
 
 - **Evaporation all the way down:** old trails never die, the map turns into
@@ -288,24 +312,3 @@ Things to try in the working version at the top (with **Trails** ticked):
 - **Number of ants:** 50 ants still find a trail, just slowly. With 1500 the
   highways form almost at once and carry dozens of times more food. Nothing
   about a single ant changed; only the crowd did.
-
-## What I take away
-
-I love this. This is exactly what a computer should be about and what I think was the original idea when people start building these machines.
-You can argue I did not succeed in getting the right rules myself and that I missed all that fun. I argue I had a lot of fun seeing the magic of the agent discovering everything, unblocking my previous issues and frustrations, and also enjoying the result of seeing the ant trails emergence I craved.
-
-The agent (Claude) decided almost everything from one short request and succeeded in 30 minutes. It took me a couple of days just to fail and several (shy) attempts through the years. This changes everything. We have much more power to experiment with ideas and have fun with that, even if we are not the executors of endless trials and errors. I would never have had enough time to do this myself, and now I can move on and think on my next "crazy" idea: in the past I would have thought it was going to be so complex that it was not worth the time, now I know I can see agents experimenting with them. Magic here, there, everywhere.
-
-There is a nice symmetry/irony here. The ants are also simple agents running a loop
-(sense, act, leave a trace), and something capable comes out of the whole.
-The AI agent was also a loop (read, change, run, look), and something useful
-came out of that too. In both cases, the interesting part was not any single
-step but the feedback.
-
-The code is a single JavaScript file with no dependencies:
-[ants.js]({{ '/assets/ants/ants.js' | relative_url }}).
-This code could be improved but that is not the main topic of this post (I could ask Claude to improve it).
-
-Also, finally, Claude did the first draft of the post and I just iterated. Fantastic.
-
-"Claude, please, I want a million dollars now".

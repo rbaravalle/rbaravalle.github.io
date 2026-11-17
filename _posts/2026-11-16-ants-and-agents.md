@@ -48,18 +48,15 @@ this simulation, which was my first real attempt at *agentic programming*.
 
 ## Where I started
 
-> ✏️ Your background: how long you have been coding "the old way", what you
-> usually work on. Keep it short.
+I have coded for more than 20 years, and AI assisted coding is a recent novelty I am starting to grasp.
 
-I have tried this simulation before. Years ago I wrote a version in Python,
+I have tried this ant simulation before. Years ago I wrote a version in Python,
 and the results were... limited.
 
-> ✏️ What your Python version did and didn't do. If you still have a
-> screenshot, it would be great here.
+I put up a simple python script that updated on every turn, trying to simulate the emergent behavior observed on ants for fun - I did not reach out to papers or any study. After some time I forgot about it as the results were not as expected. This took me some time - maybe a couple of days.
 
 More recently I gave that code to a couple of AI chat assistants. It got
-better, but the paths never really came out clearly: lots of ants and lots of
-pheromone, but more fog than highways.
+better, but the result was not as clean. Faster results, but still not as expected.
 
 ## What "agentic" means (for someone like me)
 
@@ -67,14 +64,15 @@ With a chat assistant, you paste code in, get code back, run it yourself,
 and paste the errors back. You are the loop.
 
 With an *agent*, the AI is in the loop. It can read and write files, run the
-code, look at the output (in this case, screenshots of the simulation it took
-itself in a headless browser), and decide what to do next. My job moved from
-typing code to describing what I wanted, looking at results, and steering.
-
-> ✏️ What that felt like the first time. What surprised you? What made you
-> uncomfortable?
+code, *look at the output* (in this case, screenshots of the simulation it took
+itself in a headless browser), and decide what to do next. This is the magic I am talking about.
+My job moved from typing code to describing what I wanted, looking at results, and steering - I feel I am in the book asking Conrad things and complaining when I get "too rich".
 
 ## The build
+
+Conrad/Claude did everything from one prompt. I am not claiming I used every concept on agentic programming (MCP, RAG, etc. this is being used anyway but for this project I do not need to get into this...). I just paid for a monthly suscription and asked for something!
+
+I saw the system working autonomously for approx. 30 minutes. The process Claude did was actually very similar to mine, but the agent kept going and succeeded in the end.
 
 The first version came together quickly: ants with two states (searching for
 food / carrying food home), two pheromone grids, evaporation, and three
@@ -116,10 +114,6 @@ trail up to a few times what it would lay itself. Fresh ants, just out of the
 nest or just off the food, can build strong trails; ants that have been
 wandering for ages can't, however many of them there are. Trails now carry
 *information* (I came from food recently) rather than just *traffic*.
-
-> ✏️ Your view on how the work was split. Which decisions were yours? Where did
-> you have to push back or redirect? Was there a moment you'd have done it
-> differently?
 
 A detail I appreciated: instead of eyeballing one screenshot after each change,
 the agent wrote a small test that ran the simulation many times and measured
@@ -168,7 +162,6 @@ Things to try in the working version at the top (with **Trails** ticked):
 - **Evaporation all the way down:** old trails never die, the map turns into
   fog, and before long the colony locks itself into a loop and stops
   delivering food altogether.
-  > ✏️ Was this the problem with your Python version? Worth saying if so.
 - **Evaporation all the way up:** trails still form, but they are thinner and
   shorter-lived, and many more ants are out exploring at any given moment.
   Forgetting quickly turns out to be a feature.
@@ -178,11 +171,12 @@ Things to try in the working version at the top (with **Trails** ticked):
 
 ## What I take away
 
-> ✏️ Your honest reflections: what got faster, what didn't, where your own
-> experience still mattered, whether you'd use this approach for real work, and
-> what you'd do next.
+I love this. This is exactly what a computer should be about and what I think was the original idea when people start building these machines.
 
-There is a nice symmetry here. The ants are simple agents running a loop
+The agent (Claude) decided everything from a single prompt and succeeded in 30 minutes. It took me a couple of days just to fail and several (shy) attempts through the years. This changes everything. We have much more power to experiment with ideas. I would never had enough time to do this myself.
+I wonder how far can this go. I may be limited by my own imagination here.
+
+There is a nice symmetry/irony here. The ants are simple agents running a loop
 (sense, act, leave a trace), and something capable comes out of the whole.
 The AI agent was also a loop (read, change, run, look), and something useful
 came out of that too. In both cases, the interesting part was not any single
@@ -190,3 +184,4 @@ step but the feedback.
 
 The code is a single JavaScript file with no dependencies:
 [ants.js]({{ '/assets/ants/ants.js' | relative_url }}).
+This code could be improved but that is not the main topic of this post.

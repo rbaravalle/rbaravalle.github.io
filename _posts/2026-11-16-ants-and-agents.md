@@ -97,12 +97,14 @@ the same, so a busy cell got busier whether or not it led anywhere. The map
 recorded *traffic*, not *information*. Keep that in mind: the AI agent ran
 into the very same trap later in this story.
 
-More recently I gave that code to a couple of AI chat assistants, and
+More recently I gave that code to a couple of AI chat assistants (ChatGPT
+first, then Gemini), and
 iterated: run it, look at it, paste back what was wrong, ask for changes. I
 did this a couple of times. Looking back, *I* was the agent. It got better,
 but the result was not as clean. Faster results, but still not as expected.
 
-Running the versions I kept shows how it went. In an early one, the ants
+Running the versions I kept shows how it went. I gave my first script to
+ChatGPT, and in what came back, the ants
 leave the nest (blue square) and huddle in a clump right next to it, far from
 the food (green). In 2,000 steps they brought home between 1 and 3 pieces of
 food.
@@ -110,9 +112,9 @@ food.
 <figure style="margin: 1.5em 0; text-align: center;">
   <img src="{{ '/assets/ants/img/chatbot-early.gif' | relative_url }}"
        width="280" height="280" style="border-radius: 4px; display: block; margin: 0 auto; image-rendering: pixelated;"
-       alt="An early chatbot-assisted version: white ants clumped in a magenta haze next to the blue nest, while the green food square sits untouched.">
+       alt="ChatGPT's version of my first script: white ants clumped in a magenta haze next to the blue nest, while the green food square sits untouched.">
   <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
-    An early chatbot-assisted version: the clump.
+    ChatGPT's version of my first script: the clump.
     (<a href="{{ '/assets/ants/python/chatbot_ants_ai.py' | relative_url }}">code</a>)
   </figcaption>
 </figure>

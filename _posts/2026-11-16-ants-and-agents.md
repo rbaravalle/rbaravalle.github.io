@@ -19,11 +19,16 @@ brings the Army to your door.
 > ✏️ Your own connection to the book: when you read it, what Conrad meant to
 > a kid who was (or was about to become) a programmer.
 
-<!-- ✏️ Image: a photo of your own copy works best (and avoids copyright
-issues with scans from the web). Save it as assets/ants/img/supercomputer.jpg
-and remove the comment markers around the next line.
-![My copy of Supercomputer, Choose Your Own Adventure #39]({{ '/assets/ants/img/supercomputer.jpg' | relative_url }})
--->
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/ants/img/supercomputer-back-cover.jpg' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Back cover text: Life can get superdangerous with a supercomputer around! You've won a computer programming contest. Now you're the lucky new owner of a Genecomp AI 32 computer named Conrad. You read the operating instructions carefully and turn on the power. Suddenly Conrad begins to talk. He already knows everything about you! Your new supercomputer is a genius. You can do almost anything with him!">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Detail of the back cover of <em>Supercomputer</em>, Choose Your Own Adventure #39
+    (Edward Packard, Bantam Books, 1984). Cover scan via
+    <a href="https://gamebooks.org/Item/530">gamebooks.org</a>.
+  </figcaption>
+</figure>
 
 For forty years that was pure fiction. Programming meant telling the machine
 *how*, line by line. Lately it feels like we are getting close to Conrad:

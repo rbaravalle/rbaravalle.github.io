@@ -60,17 +60,42 @@ I put up a simple python script that updated on every turn, trying to simulate t
        width="320" height="320" style="border-radius: 4px; display: block; margin: 0 auto;"
        alt="My old Python simulation: a white field of food with black specks where ants have eaten, and a grey band of queens across the middle. No paths form.">
   <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
-    My old Python version, running again today. White is food, black is where
+    My first Python version, running again today. White is food, black is where
     ants have eaten, the grey band is the queens.
     (<a href="{{ '/assets/ants/python/ants_original_py2.py' | relative_url }}">original code</a>,
     <a href="{{ '/assets/ants/python/ants.py' | relative_url }}">Python 3 port</a>)
   </figcaption>
 </figure>
 
-Looking at it again now, the reason is clear: my ants never left anything
-behind for each other. Each one wandered on its own, and nothing told the next
-ant where food had been found or where home was. Without a shared trail, there
-was nothing for a path to form from.
+Looking at it again now, the reason is clear: in this first version my ants
+never left anything behind for each other. Each one wandered on its own, and
+nothing told the next ant where food had been found or where home was. Without
+a shared trail, there was nothing for a path to form from.
+
+In 2016 I came back to it with a second attempt, `antsCamino` (*camino* is
+Spanish for path). This time the ants did leave a mark: every step added to a
+shared "paths" map, the map slowly faded, and each ant steered toward the
+most-walked cell next to it. And paths did form!
+
+<figure style="margin: 1.5em 0; text-align: center;">
+  <img src="{{ '/assets/ants/img/python-2016-camino.gif' | relative_url }}"
+       width="320" height="320" style="border-radius: 4px; display: block; margin: 0 auto;"
+       alt="My 2016 Python simulation: bright straight lines form on a black background, but they do not connect the grey food square at the bottom left with the white queen squares at the top right.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    The 2016 version. Bright lines are the most-walked cells, the grey square
+    (bottom left) is the food, the white squares (top right) are the queens.
+    (<a href="{{ '/assets/ants/python/ants_camino_2016_py2.py' | relative_url }}">original code</a>,
+    <a href="{{ '/assets/ants/python/ants_camino.py' | relative_url }}">Python 3 port</a>)
+  </figcaption>
+</figure>
+
+But look at where they go: nowhere in particular. The lines connect neither
+the food nor the queens. Running it again today, in two runs of 1,000 frames,
+about 85% of the ants were locked onto those lines by frame 300, eating
+stopped, and not a single piece of food reached a queen. Every step counted
+the same, so a busy cell got busier whether or not it led anywhere. The map
+recorded *traffic*, not *information*. Keep that in mind: the AI agent ran
+into the very same trap later in this story.
 
 More recently I gave that code to a couple of AI chat assistants. It got
 better, but the result was not as clean. Faster results, but still not as expected.
@@ -130,7 +155,8 @@ crowd alone kept the loop alive. The solution: an ant can only reinforce a
 trail up to a few times what it would lay itself. Fresh ants, just out of the
 nest or just off the food, can build strong trails; ants that have been
 wandering for ages can't, however many of them there are. Trails now carry
-*information* (I came from food recently) rather than just *traffic*.
+*information* (I came from food recently) rather than just *traffic*: exactly
+what my 2016 version was missing.
 
 A detail I appreciated: instead of eyeballing one screenshot after each change,
 the agent wrote a small test that ran the simulation many times and measured

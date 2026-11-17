@@ -97,8 +97,49 @@ the same, so a busy cell got busier whether or not it led anywhere. The map
 recorded *traffic*, not *information*. Keep that in mind: the AI agent ran
 into the very same trap later in this story.
 
-More recently I gave that code to a couple of AI chat assistants. It got
-better, but the result was not as clean. Faster results, but still not as expected.
+More recently I gave that code to a couple of AI chat assistants, and
+iterated: run it, look at it, paste back what was wrong, ask for changes. I
+did this a couple of times. Looking back, *I* was the agent. It got better,
+but the result was not as clean. Faster results, but still not as expected.
+
+Running the versions I kept shows how it went. In an early one, the ants
+leave the nest (blue square) and huddle in a clump right next to it, far from
+the food (green). In 2,000 steps they brought home between 1 and 3 pieces of
+food.
+
+<figure style="margin: 1.5em 0; text-align: center;">
+  <img src="{{ '/assets/ants/img/chatbot-early.gif' | relative_url }}"
+       width="280" height="280" style="border-radius: 4px; display: block; margin: 0 auto; image-rendering: pixelated;"
+       alt="An early chatbot-assisted version: white ants clumped in a magenta haze next to the blue nest, while the green food square sits untouched.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    An early chatbot-assisted version: the clump.
+    (<a href="{{ '/assets/ants/python/chatbot_ants_ai.py' | relative_url }}">code</a>)
+  </figcaption>
+</figure>
+
+The last one, from Gemini, says "ANTI-CLUMPING" in its own comments, so the
+clump was clearly what I kept complaining about. Its ants do spread out and
+bring food home (yellow ants are carrying food). But look for the paths:
+there are almost none.
+
+<figure style="margin: 1.5em 0; text-align: center;">
+  <img src="{{ '/assets/ants/img/chatbot-gemini.gif' | relative_url }}"
+       width="280" height="280" style="border-radius: 4px; display: block; margin: 0 auto; image-rendering: pixelated;"
+       alt="The final Gemini version: ants scattered all over the map between the blue nest and two green food squares, with only faint red traces and no visible trails.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    The final version, from Gemini: ants everywhere, trails nowhere.
+    (<a href="{{ '/assets/ants/python/chatbot_gemini_final.py' | relative_url }}">code</a>)
+  </figcaption>
+</figure>
+
+So I tested it. With the pheromones switched off completely, the colony
+delivers the same amount of food as with them on: about 90 pieces in 3,000
+steps, averaged over three runs. The trails are decoration. The ants find
+food by wandering, and a built-in compass that points to the nest from
+anywhere on the map helps them get back (without it, deliveries drop by
+about a quarter). The colony works, but nothing *emerges*. (A small extra:
+the progress counter says "out of 500", but the map actually holds 50,000
+units of food.)
 
 ## What "agentic" means (for someone like me)
 

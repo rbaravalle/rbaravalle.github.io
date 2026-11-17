@@ -132,6 +132,17 @@ there are almost none.
   </figcaption>
 </figure>
 
+The chatbot was very sure of itself. Its explanation of the fix ended like this:
+
+> **Higher Decay (`0.05`):** Trails disappear much faster. If ants get stuck
+> in a loop, they stop reinforcing the correct path. The loop's pheromone
+> decays rapidly, the trail breaks, and the ants are forced to wander randomly
+> again, breaking the circle.
+>
+> **Static Compass (`dist_score`):** Ants carrying food now have a permanent
+> "magnetic pull" towards the center. [...] the compass gently nudges them
+> toward the nest every step.
+
 So I tested it. With the pheromones switched off completely, the colony
 delivers the same amount of food as with them on: about 90 pieces in 3,000
 steps, averaged over three runs. The trails are decoration. The ants find
@@ -140,6 +151,14 @@ anywhere on the map helps them get back (without it, deliveries drop by
 about a quarter). The colony works, but nothing *emerges*. (A small extra:
 the progress counter says "out of 500", but the map actually holds 50,000
 units of food.)
+
+Read the explanation again with that in mind. Every sentence sounds reasonable,
+and the clump really was gone. But it was gone because the trails now vanish
+before anyone can follow them: the fix worked by switching off the very
+mechanism the paths were supposed to come from. The "gentle nudge" turned out
+to be doing most of the work. Nobody measured any of it. The chatbot could
+not run the code, and I, the human in the loop, only looked at the animation
+and moved on.
 
 ## What "agentic" means (for someone like me)
 
@@ -203,6 +222,9 @@ A detail I appreciated: instead of eyeballing one screenshot after each change,
 the agent wrote a small test that ran the simulation many times and measured
 how often the colony stalled. Several "obvious" parameter tweaks turned out to
 do nothing when measured; the rule change above was what actually helped.
+That is the real difference from my chatbot round. There, a confident
+explanation was the end of the story. Here, every explanation was a claim to be
+measured, and the agent did the measuring itself.
 
 ## How the trails form
 

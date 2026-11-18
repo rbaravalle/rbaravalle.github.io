@@ -9,6 +9,6 @@ I spent the last several years at iRobot, where I led a team working on visual S
 
 I'm also co-founder of [The Logic & Language Studio](https://thelogiclanguagestudio.setmore.com), where I teach maths and computer science.
 
-I use this site to write about the projects I'm working on. The latest is [Emergent behavior and agentic magic programming]({% post_url 2026-11-16-ants-and-agents %}).
+You can browse my past work, from room segmentation for Roomba to procedurally baked bread, on the [Projects]({{ '/projects/' | relative_url }}) page. I also write about what I'm working on now on the [Blog]({{ '/blog/' | relative_url }}). The latest post is [Emergent behavior and agentic magic programming]({% post_url 2026-11-16-ants-and-agents %}).
 
 I'm currently open to remote software engineering and tech lead roles. Find me on [LinkedIn](https://www.linkedin.com/in/rodrigo-baravalle/) or [GitHub](https://github.com/rbaravalle).

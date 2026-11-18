@@ -16,6 +16,13 @@ permalink: /projects/
     {%- if p.figure %}
     <img class="project-figure" src="{{ '/assets/projects/' | append: p.figure | relative_url }}" alt="{{ p.title }} diagram">
     {%- endif %}
+    {%- if p.gallery %}
+    <div class="project-gallery">
+      {%- for g in p.gallery %}
+      <a href="{{ '/assets/projects/' | append: g | relative_url }}"><img src="{{ '/assets/projects/' | append: g | relative_url }}" alt="{{ p.title }}"></a>
+      {%- endfor %}
+    </div>
+    {%- endif %}
     {%- if p.links.size > 0 %}
     <ul class="project-links">
       {%- for l in p.links %}

@@ -17,23 +17,33 @@ Run:
     pip install anthropic
     export ANTHROPIC_API_KEY=...        # from platform.claude.com
     mkdir ~/agent-sandbox && cd ~/agent-sandbox
-    python3 /path/to/step2_eyes.py
+    python3 /path/to/step2_eyes.py                      # Haiku, 25 steps
+    python3 /path/to/step2_eyes.py --steps 60 --model opus
 
 Type a task and press Enter. Ctrl+D (or an empty line) quits.
 """
+import argparse
 import json
 import subprocess
 from pathlib import Path
 
 import anthropic
 
-MODEL = "claude-haiku-5-5"
-
-# Prices in USD per million tokens, for prompts up to 100K tokens.
+# Prices in USD per million tokens (input, output).
 # Check https://platform.claude.com/docs/en/about-claude/pricing for current values.
-PRICE_IN, PRICE_OUT = 0.10, 0.50
+MODELS = {
+    "haiku": ("claude-haiku-5-5", 0.10, 0.50),   # prompts over 100K tokens: 0.50 / 2.50
+    "opus":  ("claude-opus-5-5", 4.00, 20.00),
+}
 
-MAX_STEPS = 25   # brake: a confused loop must not spend credits forever
+args = argparse.ArgumentParser()
+args.add_argument("--model", choices=MODELS, default="haiku")
+args.add_argument("--steps", type=int, default=25,
+                  help="brake: a confused loop must not spend credits forever")
+args = args.parse_args()
+
+MODEL, PRICE_IN, PRICE_OUT = MODELS[args.model]
+MAX_STEPS = args.steps
 
 SHOW_LINES = 30  # how much of each tool result to show me
 
@@ -95,7 +105,7 @@ def run_tool(name, args):
             if answer.strip().lower() != "y":
                 return "The user declined to run this command."
             p = subprocess.run(args["command"], shell=True, capture_output=True,
-                               text=True, timeout=60)
+                               text=True, timeout=300)
             return (f"exit code {p.returncode}\n"
                     f"stdout:\n{p.stdout[-4000:]}\nstderr:\n{p.stderr[-4000:]}")
         return f"Unknown tool: {name}"
@@ -143,7 +153,10 @@ def main():
                     print("\nclaude> " + block.text)
 
             u = response.usage
-            cost = (u.input_tokens * PRICE_IN + u.output_tokens * PRICE_OUT) / 1_000_000
+            price_in, price_out = PRICE_IN, PRICE_OUT
+            if args.model == "haiku" and u.input_tokens > 100_000:
+                price_in, price_out = 0.50, 2.50   # Haiku's long-prompt price
+            cost = (u.input_tokens * price_in + u.output_tokens * price_out) / 1_000_000
             total_cost += cost
             print(f"\n  [step {step + 1}: {u.input_tokens} tokens in, {u.output_tokens} out, "
                   f"${cost:.5f}, ${total_cost:.4f} total]")

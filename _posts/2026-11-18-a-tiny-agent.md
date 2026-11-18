@@ -473,8 +473,90 @@ still was missing: a comparison with the smell switched off. The step 2
 agent did that one on its own; this one didn't. Each run makes different
 choices, and nothing in my twenty lines makes it do the right experiment.
 
-**[TODO: same prompt on Opus for the fair comparison with Claude. Maybe
-also: tell it "no compass" and see if it finds the harder half.]**
+### No compass allowed
+
+The compass felt like cheating, so I added one sentence to the same
+prompt:
+
+> Ants must not know where the nest or the food is; they can only smell
+> pheromone.
+
+Same agent, same Haiku model
+([transcript]({{ '/tiny-agent/runs/step3_haiku_ants_no_compass/transcript.txt' | relative_url }}),
+[code]({{ '/tiny-agent/runs/step3_haiku_ants_no_compass/ants.py' | relative_url }})).
+After six round trips it stopped and was honest: "the result is only partly
+what you asked for... a dense web of trails with many loops, not one clean
+highway". I typed "yes please, try to get a cleaner single path", and it
+went on for nineteen more. About **6 cents** in total.
+
+This was the most careful run so far. It made its parameters adjustable and
+ran small sweeps instead of guessing. One setting looked great: 5,833
+deliveries. Then, without being asked, it tried two more random seeds: 189
+and 0.
+
+> Seed 1 looks good, but seeds 2 and 3 are much weaker (189 and 0
+> deliveries). I'll look at the image, then check robustness before
+> claiming anything.
+
+And later: "I'll measure across several seeds... rather than picking the
+seed that looks good." That's the lesson of the first post, coming from a
+two-cent model. It added a counter of food *pickups* and found that ants
+did find food (118 to 486 times) but never brought it home. Its diagnosis:
+
+> The cause is the nest-trail channel: empty random-walking ants lay it
+> everywhere, so it no longer points toward the nest.
+
+Traffic, not information! The third time in this story, after my 2016
+version and its own step 2 run. Claude's version in the first post got out
+of this trap by making deposits fade the longer an ant had been away. The
+tiny agent got out differently: it deleted the trail the ants lay and
+replaced it with a fixed smell coming from the nest, getting weaker with
+distance, across the whole map. After a few more sweeps:
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-haiku-ants-no-compass.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Food-trail pheromone after 12,000 steps, 5,372 deliveries: a wide bright band from the nest on the left to the food on the right, with fainter loops above and below and ants spread along it.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    No compass allowed: a wide corridor from the nest (left) to the food
+    (right), with loops around it. Cyan ants are empty, green ones carry
+    food.
+  </figcaption>
+</figure>
+
+A corridor, consistent across six seeds, which it checked. Its caveat at
+the end: "the nest gradient is a built-in field, not something the ants lay
+down. That is still a smell, but it is a design choice you should know
+about."
+
+It is a smell, technically. I said "they can only smell pheromone", and
+they do. But a smell that covers the whole map and gets stronger toward the
+nest is a map of where the nest is. How strong is it? Because ants follow
+smell very sharply in this version, one step closer to the nest makes a
+move about 4.5 times more likely. That's almost exactly the strength of the
+compass in the previous run. The agent followed my sentence to the letter
+and rebuilt the compass, with a new name.
+
+Same check as before, switching things off
+([script]({{ '/tiny-agent/runs/step3_haiku_ants_no_compass/check_variants.py' | relative_url }})),
+two seeds each:
+
+| | delivered | strong trail cells | ants carrying food |
+|---|---|---|---|
+| the agent's version | 5,372 / 4,505 | 151 / 135 | 10–22% |
+| empty ants ignore the food trail | 1,679 / 1,576 | 198 / 141 | 6% |
+| nest smell only at the nest itself | 1,297 / 1,299 | 3,786 / 3,872 | 60–70% |
+
+Without the nest-wide smell, the trail smears over 3,800 cells and most
+ants wander with food. The corridor's *shape* comes from the built-in
+gradient, as in the compass run. But the emergent half is stronger here:
+when empty ants follow the trail the carriers leave, three times as much
+food gets home (with the compass it was one and a half). Better than last
+time, and still not the harder half: ants finding their way home by a trail
+other ants lay, the thing Claude's version did and the tiny agent avoided
+three times.
+
+**[TODO: same prompt on Opus for the fair comparison with Claude.]**
 
 ## What the real ones add
 
@@ -486,6 +568,12 @@ So far:
   it once (a constant used before it was defined).
 - Re-sent conversation: the input grew from 793 to 28,008 tokens in 13 steps.
 - Typing `y` dozens of times. Permissions are a real design problem.
+- The "sandbox" is just a folder: in the no-compass run the agent wrote
+  scripts to `/tmp`, tried `cd /root`, and later deleted its scratch files in `/tmp`. My `y/N`
+  was the only guard, and after a while you stop reading.
+- Its parameter sweeps took up to 4.5 minutes, close to my 5-minute limit
+  per command.
+- It stopped after six steps and needed a nudge to keep going.
 
 These are the things products like Claude Code solve.
 

@@ -7,7 +7,7 @@
     In 2026 my team took on several new lines of work, mostly exploratory:
   bullets:
     - "Embedded object detection with YOLO-NAS and RF-DETR, aiming for better on-robot object identification (close to production release)"
-    - "Federated learning with NVIDIA FLARE, training models across robots without centralising their data"
+    - "Federated learning with NVIDIA FLARE, training models across databases in different regions whose data could not be moved"
     - "Integrating our visual SLAM with lidar SLAM"
     - "Embedded 3D reconstruction with feed-forward Gaussian splatting (YoNoSplat, ReCoSplat)"
     - "First steps with NVIDIA Isaac Sim for simulation"

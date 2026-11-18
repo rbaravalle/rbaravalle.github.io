@@ -1,0 +1,52 @@
+# Projects shown on /projects/, newest first.
+# To add a picture: put the file in assets/projects/ and set `image:` to its name.
+
+- title: "RoomsSeg: room-by-room cleaning for Roomba"
+  meta: "iRobot · 2015 onwards · IROS 2017"
+  description: >-
+    The robot builds a grid map while it cleans, and RoomsSeg turns it into
+    rooms and hallways: it removes clutter from the map, then applies
+    watershed segmentation. This lets the robot clean one room at a time, and
+    users can name rooms and send the robot to them. I worked on this in C++
+    from 2015, and much of my later work at iRobot built on it.
+  image: roomseg.png
+  links:
+    - label: "Paper (IROS 2017)"
+      url: "https://doi.org/10.1109/IROS.2017.8206429"
+    - label: "IEEE Spectrum article"
+      url: "https://spectrum.ieee.org/how-irobots-roomba-will-roomify-your-home"
+
+- title: "Modelling and rendering bread"
+  meta: "PhD · CIFASIS-CONICET, Rosario · 2011–2016"
+  description: >-
+    My PhD built a computational model of bread making. It simulates proving
+    and baking to produce the inner structure and look of real bread, and
+    checks the results against real bread with a multifractal error metric.
+    The same ideas led to a more general method for generating porous
+    materials procedurally.
+  image: bread.png
+  links:
+    - label: "Procedural bread making (Computers & Graphics, 2015)"
+      url: "https://doi.org/10.1016/j.cag.2015.05.003"
+    - label: "Realistic modeling of porous materials (CAVW, 2017)"
+      url: "https://publications-cgv01.ewi.tudelft.nl/papers/294"
+    - label: "Multifractal classification of bread crumb (EURASIP JIVP, 2015)"
+      url: "https://doi.org/10.1186/s13640-015-0063-8"
+
+- title: "3D mapping with a time-of-flight camera"
+  meta: "INRIA Grenoble, E-MOTION team · 2010–2011"
+  description: >-
+    Real-time 3D mapping of indoor spaces from a moving robot. A Swissranger
+    SR4000 camera gives 3D point clouds, and 2D SLAM gives the robot's
+    position, so the two combine into a 3D map. Written in C++ with ROS.
+  image: inria.png
+  links:
+    - label: "INRIA technical report (2011)"
+      url: "https://inria.hal.science/inria-00594908"
+
+- title: "Texture generation on the GPU"
+  meta: "Licentiate thesis"
+  description: >-
+    My undergraduate thesis: generating textures procedurally on the GPU.
+  image: textures.png
+  links: []

@@ -49,3 +49,40 @@ td {
 tr:nth-child(even) {
   background-color: rgba(255, 255, 255, 0.03);
 }
+
+// Projects page
+.project {
+  display: flex;
+  gap: 1.5em;
+  align-items: flex-start;
+  padding: 1.5em 0;
+  border-bottom: 1px solid $grey-color-light;
+
+  &:last-child { border-bottom: none; }
+
+  @media (max-width: 600px) { flex-direction: column; }
+}
+
+.project-image {
+  flex: 0 0 240px;
+  width: 240px;
+  max-width: 100%;
+  border-radius: 4px;
+
+  @media (max-width: 600px) { width: 100%; flex-basis: auto; }
+}
+
+.project-body { flex: 1; min-width: 0; }
+
+.project-title { font-size: 1.3em; margin-bottom: 0.2em; }
+
+.project-meta {
+  color: $grey-color;
+  font-size: 0.9em;
+  margin-bottom: 0.6em;
+}
+
+.project-links {
+  margin-left: 1.2em;
+  font-size: 0.95em;
+}

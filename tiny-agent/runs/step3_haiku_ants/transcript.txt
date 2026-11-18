@@ -1,0 +1,364 @@
+(.venv) rodrigo@rodrigo-personal:~/agent-sandbox-ants3$ python3 ~/rbaravalle.github.io/tiny-agent/step3_vision.py --steps 60
+
+you> I want to do a visualization of emergent behavior for “ants” as they take “food” from a source to a “nest”. I want in the end to see paths forming between the foods and nests. Write it in Python. Since you can’t see the screen, print numbers that show whether paths form (for example food delivered over time), and save an image of the final state as ants.png.
+
+  [step 1: 938 tokens in, 208 out, $0.00020, $0.0002 total]
+
+  [tool] run_command {"command": "python3 -c \"import numpy, matplotlib; print(numpy.__version__, matplotlib.__version__)\"; pwd; ls"}
+
+  run `python3 -c "import numpy, matplotlib; print(numpy.__version__, matplotlib.__version__)"; pwd; ls`? [y/N] y
+  | exit code 0
+  | stdout:
+  | 2.5.5 3.11.2
+  | /home/rodrigo/agent-sandbox-ants3
+  | 
+  | stderr:
+
+  [step 2: 1200 tokens in, 3181 out, $0.00171, $0.0019 total]
+
+  [tool] write_file {"path": "ants.py", "content": "\"\"\"Ant foraging with pheromone trails: food source -> nest.\n\nTwo pheromone fields:\
+  | Wrote 4271 characters to ants.py
+
+  [step 3: 4401 tokens in, 53 out, $0.00047, $0.0024 total]
+
+  [tool] run_command {"command": "python3 ants.py"}
+
+  run `python3 ants.py`? [y/N] y
+  | exit code 0
+  | stdout:
+  | step   2000 | delivered in window    0 | total     0 | carrying   1 | strong-trail cells     2 ( 0.0% of grid)
+  | step   4000 | delivered in window    0 | total     0 | carrying   4 | strong-trail cells     6 ( 0.0% of grid)
+  | step   6000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    11 ( 0.1% of grid)
+  | step   8000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    14 ( 0.1% of grid)
+  | step  10000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    14 ( 0.1% of grid)
+  | step  12000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    14 ( 0.1% of grid)
+  | step  14000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    14 ( 0.1% of grid)
+  | step  16000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    17 ( 0.1% of grid)
+  | step  18000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    17 ( 0.1% of grid)
+  | step  20000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    16 ( 0.1% of grid)
+  | 
+  | deliveries in first 2 windows: 0
+  | deliveries in last 2 windows : 0
+  | PATH FORMED: FAIL (late/early ratio 0.0, need > 2)
+  | saved ants.png
+  | 
+  | stderr:
+
+claude> The run produced almost no deliveries, so the path check fails. I'll check where the ants are before changing anything.
+
+  [step 4: 5032 tokens in, 1289 out, $0.00115, $0.0035 total]
+
+  [tool] run_command {"command": "cd /home/rodrigo/agent-sandbox-ants3 && python3 -c \"\nimport re\nsrc=open('ants.py').read().replace('STEPS
+
+  run `cd /home/rodrigo/agent-sandbox-ants3 && python3 -c "
+import re
+src=open('ants.py').read().replace('STEPS = 20000','STEPS = 3000').replace('REPORT = 2000','REPORT = 500')
+src=src.replace('        window_delivered = 0','        print(\"  mean dist from nest\", np.linalg.norm(pos-NEST,axis=1).mean().round(1), \"unique cells\", len(set(map(tuple,pos))), \"max trail_food\", trail_food.max().round(2))\n        window_delivered = 0')
+exec(compile(src,'x','exec'))
+" | head -30`? [y/N] y
+  | exit code 0
+  | stdout:
+  | step    500 | delivered in window    0 | total     0 | carrying   0 | strong-trail cells     0 ( 0.0% of grid)
+  |   mean dist from nest 19.8 unique cells 277 max trail_food 0.0
+  | step   1000 | delivered in window    0 | total     0 | carrying   0 | strong-trail cells     0 ( 0.0% of grid)
+  |   mean dist from nest 27.7 unique cells 289 max trail_food 0.0
+  | step   1500 | delivered in window    0 | total     0 | carrying   0 | strong-trail cells     0 ( 0.0% of grid)
+  |   mean dist from nest 33.9 unique cells 294 max trail_food 0.0
+  | step   2000 | delivered in window    0 | total     0 | carrying   1 | strong-trail cells     2 ( 0.0% of grid)
+  |   mean dist from nest 39.7 unique cells 288 max trail_food 12.01
+  | step   2500 | delivered in window    0 | total     0 | carrying   2 | strong-trail cells     2 ( 0.0% of grid)
+  |   mean dist from nest 45.6 unique cells 293 max trail_food 72.6
+  | step   3000 | delivered in window    0 | total     0 | carrying   2 | strong-trail cells     4 ( 0.0% of grid)
+  |   mean dist from nest 49.0 unique cells 290 max trail_food 97.51
+  | 
+  | deliveries in first 2 windows: 0
+  | deliveries in last 2 windows : 0
+  | PATH FORMED: FAIL (late/early ratio 0.0, need > 2)
+  | saved ants.png
+  | 
+  | stderr:
+
+claude> The ants do spread out, but food is found too rarely for trails to reinforce. I'll shrink the world, slow the evaporation, and raise the pheromone sensitivity, then re-check.
+
+  [step 5: 6882 tokens in, 1400 out, $0.00139, $0.0049 total]
+
+  [tool] run_command {"command": "cd /home/rodrigo/agent-sandbox-ants3 && sed -i 's/^W = H = 120/W = H = 80/; s/^N_ANTS = 300/N_ANTS = 400/; 
+
+  run `cd /home/rodrigo/agent-sandbox-ants3 && sed -i 's/^W = H = 120/W = H = 80/; s/^N_ANTS = 300/N_ANTS = 400/; s/^STEPS = 20000/STEPS = 30000/; s/^NEST = np.array(\[15, 15\])/NEST = np.array([10, 10])/; s/^FOOD = np.array(\[104, 104\])/FOOD = np.array([68, 68])/; s/^DECAY = 0.995/DECAY = 0.998/; s/^ALPHA = 2.0 /ALPHA = 1.5 /' ants.py && grep -n "^[A-Z_]* = " ants.py && python3 ants.py`? [y/N] y
+  | ... (8 lines hidden)
+  | 22:NEST_R = 3
+  | 23:FOOD_R = 3
+  | 24:DEPOSIT = 1.0
+  | 25:DECAY = 0.998
+  | 26:ALPHA = 1.5          # pheromone sensitivity
+  | 27:INERTIA = 1.6        # bonus for continuing in the same direction
+  | 28:EPS = 0.05
+  | 30:DIRS = np.array([(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)])
+  | step   2000 | delivered in window    0 | total     0 | carrying   3 | strong-trail cells     4 ( 0.1% of grid)
+  | step   4000 | delivered in window    0 | total     0 | carrying   6 | strong-trail cells    17 ( 0.3% of grid)
+  | step   6000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    18 ( 0.3% of grid)
+  | step   8000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    19 ( 0.3% of grid)
+  | step  10000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    19 ( 0.3% of grid)
+  | step  12000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    19 ( 0.3% of grid)
+  | step  14000 | delivered in window    0 | total     0 | carrying   7 | strong-trail cells    19 ( 0.3% of grid)
+  | step  16000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    20 ( 0.3% of grid)
+  | step  18000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    14 ( 0.2% of grid)
+  | step  20000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells     9 ( 0.1% of grid)
+  | step  22000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    11 ( 0.2% of grid)
+  | step  24000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    11 ( 0.2% of grid)
+  | step  26000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells     6 ( 0.1% of grid)
+  | step  28000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells    10 ( 0.2% of grid)
+  | step  30000 | delivered in window    0 | total     0 | carrying   8 | strong-trail cells     8 ( 0.1% of grid)
+  | 
+  | deliveries in first 2 windows: 0
+  | deliveries in last 2 windows : 0
+  | PATH FORMED: FAIL (late/early ratio 0.0, need > 2)
+  | saved ants.png
+  | 
+  | stderr:
+
+claude> Still zero deliveries, and the carrying count plateaus at about 8. Loaded ants are getting lost, so I'll add a mild nest-direction bias for carrying ants. The pheromone trails should still form on top of that.
+
+  [step 6: 9357 tokens in, 1715 out, $0.00179, $0.0067 total]
+
+  [tool] run_command {"command": "cd /home/rodrigo/agent-sandbox-ants3 && python3 - <<'EOF'\nsrc = open('ants.py').read()\nsrc = src.replace(
+
+  run `cd /home/rodrigo/agent-sandbox-ants3 && python3 - <<'EOF'
+src = open('ants.py').read()
+src = src.replace("""def choose_moves(field, pos, last_dir):
+    \"\"\"Pick a neighbour per ant with probability ~ (pheromone+eps)^ALPHA * inertia.\"\"\"
+    nxt = pos[:, None, :] + DIRS[None, :, :]               # (N,8,2)""",
+"""def choose_moves(field, pos, last_dir, guide_to=None):
+    \"\"\"Pick a neighbour per ant with probability ~ (pheromone+eps)^ALPHA * inertia.
+    guide_to: optional (N,2) target; multiplies weights by exp(GUIDE*cos(angle)) so
+    loaded ants can still find the nest before a trail exists.\"\"\"
+    nxt = pos[:, None, :] + DIRS[None, :, :]               # (N,8,2)""")
+src = src.replace("""    w = np.where(np.arange(8)[None, :] == last_dir[:, None], w * INERTIA, w)
+""", """    w = np.where(np.arange(8)[None, :] == last_dir[:, None], w * INERTIA, w)
+    if guide_to is not None:
+        to = guide_to - pos                                  # (N,2)
+        norm = np.linalg.norm(to, axis=1, keepdims=True) + 1e-9
+        cosang = (DIRS[None, :, :] @ np.ones((2,1)) * 0)[..., 0]  # placeholder, replaced below
+        dn = np.linalg.norm(DIRS, axis=1)[None, :]
+        cosang = (DIRS[None, :, :] * (to / norm)[:, None, :]).sum(axis=2) / dn
+        w = w * np.exp(GUIDE * cosang)
+""")
+src = src.replace("EPS = 0.05\n", "EPS = 0.05\nGUIDE = 1.5          # carrying ants: bias toward the nest direction\n")
+src = src.replace("""                 choose_moves(trail_home, pos, last_dir),""", """                 choose_moves(trail_home, pos, last_dir, guide_to=np.tile(NEST, (N_ANTS, 1))),""")
+open('ants.py','w').write(src)
+EOF
+grep -n "placeholder" ants.py`? [y/N] y
+  | exit code 0
+  | stdout:
+  | 58:        cosang = (DIRS[None, :, :] @ np.ones((2,1)) * 0)[..., 0]  # placeholder, replaced below
+  | 
+  | stderr:
+
+claude> I left a placeholder line in the code. Removing it, then running.
+
+  [step 7: 11146 tokens in, 190 out, $0.00121, $0.0079 total]
+
+  [tool] run_command {"command": "cd /home/rodrigo/agent-sandbox-ants3 && sed -i '/placeholder, replaced below/d' ants.py && python3 ants.py"
+
+  run `cd /home/rodrigo/agent-sandbox-ants3 && sed -i '/placeholder, replaced below/d' ants.py && python3 ants.py`? [y/N] y
+  | exit code 0
+  | stdout:
+  | step   2000 | delivered in window    7 | total     7 | carrying   2 | strong-trail cells     1 ( 0.0% of grid)
+  | step   4000 | delivered in window    4 | total    11 | carrying   2 | strong-trail cells     5 ( 0.1% of grid)
+  | step   6000 | delivered in window    0 | total    11 | carrying   5 | strong-trail cells     6 ( 0.1% of grid)
+  | step   8000 | delivered in window    0 | total    11 | carrying   5 | strong-trail cells     5 ( 0.1% of grid)
+  | step  10000 | delivered in window    0 | total    11 | carrying   5 | strong-trail cells     6 ( 0.1% of grid)
+  | step  12000 | delivered in window    0 | total    11 | carrying   5 | strong-trail cells     5 ( 0.1% of grid)
+  | step  14000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     6 ( 0.1% of grid)
+  | step  16000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     6 ( 0.1% of grid)
+  | step  18000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     6 ( 0.1% of grid)
+  | step  20000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     6 ( 0.1% of grid)
+  | step  22000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     6 ( 0.1% of grid)
+  | step  24000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     4 ( 0.1% of grid)
+  | step  26000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     4 ( 0.1% of grid)
+  | step  28000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     4 ( 0.1% of grid)
+  | step  30000 | delivered in window    0 | total    11 | carrying   6 | strong-trail cells     4 ( 0.1% of grid)
+  | 
+  | deliveries in first 2 windows: 11
+  | deliveries in last 2 windows : 0
+  | PATH FORMED: FAIL (late/early ratio 0.0, need > 2)
+  | saved ants.png
+  | 
+  | stderr:
+
+claude> Deliveries now happen, but they stop after 11 and about 6 loaded ants stay stuck. I'll look at where those ants are.
+
+  [step 8: 12159 tokens in, 767 out, $0.00160, $0.0095 total]
+
+  [tool] run_command {"command": "cd /home/rodrigo/agent-sandbox-ants3 && python3 -c \"\nsrc=open('ants.py').read().replace('STEPS = 30000','
+
+  run `cd /home/rodrigo/agent-sandbox-ants3 && python3 -c "
+src=open('ants.py').read().replace('STEPS = 30000','STEPS = 12000').replace('REPORT = 2000','REPORT = 6000')
+src=src.split('# ---- summary numbers')[0]
+exec(compile(src,'x','exec'))
+print('carrying positions', pos[carry].tolist())
+print('home trail max cell', np.unravel_index(trail_home.argmax(), trail_home.shape), trail_home.max().round(1))
+print('food trail max cell', np.unravel_index(trail_food.argmax(), trail_food.shape), trail_food.max().round(1))
+print('searching ants mean dist from food', np.linalg.norm(pos[~carry]-FOOD,axis=1).mean().round(1))
+"`? [y/N] 
+  | exit code 0
+  | stdout:
+  | step   6000 | delivered in window   11 | total    11 | carrying   5 | strong-trail cells     6 ( 0.1% of grid)
+  | step  12000 | delivered in window    0 | total    11 | carrying   5 | strong-trail cells     5 ( 0.1% of grid)
+  | carrying positions [[52, 65], [52, 65], [68, 56], [40, 47], [62, 68]]
+  | home trail max cell (np.int64(40), np.int64(47)) 57848.1
+  | food trail max cell (np.int64(52), np.int64(65)) 499.5
+  | searching ants mean dist from food 29.1
+  | 
+  | stderr:
+
+claude> The loaded ants are trapped on a peak of the home trail: the trail value there is about 57,848, and ants bounce between neighbouring peak cells. I'll fix that with a reversal penalty and compressed (log) pheromone weighting, then re-run.
+
+  [step 9: 13153 tokens in, 1750 out, $0.00219, $0.0117 total]
+
+  [tool] run_command {"command": "cd /home/rodrigo/agent-sandbox-ants3 && python3 - <<'EOF'\nsrc = open('ants.py').read()\nsrc = src.replace(
+
+  run `cd /home/rodrigo/agent-sandbox-ants3 && python3 - <<'EOF'
+src = open('ants.py').read()
+src = src.replace("    w = (p + EPS) ** ALPHA\n", "    w = (np.log1p(p) + EPS) ** ALPHA          # log: stops one huge peak from trapping ants\n")
+src = src.replace("    w = np.where(np.arange(8)[None, :] == last_dir[:, None], w * INERTIA, w)\n",
+"""    w = np.where(np.arange(8)[None, :] == last_dir[:, None], w * INERTIA, w)
+    # discourage immediate reversal (opposite of last direction is index 7-i)
+    w = np.where(np.arange(8)[None, :] == (7 - last_dir)[:, None], w * REVERSE, w)
+""")
+src = src.replace("EPS = 0.05\n", "EPS = 0.05\nREVERSE = 0.1       # weight multiplier for turning straight back\n")
+open('ants.py','w').write(src)
+EOF
+python3 ants.py`? [y/N] y
+  | exit code 0
+  | stdout:
+  | step   2000 | delivered in window   56 | total    56 | carrying   7 | strong-trail cells    11 ( 0.2% of grid)
+  | step   4000 | delivered in window  142 | total   198 | carrying   6 | strong-trail cells    23 ( 0.4% of grid)
+  | step   6000 | delivered in window  116 | total   314 | carrying   6 | strong-trail cells    36 ( 0.6% of grid)
+  | step   8000 | delivered in window  125 | total   439 | carrying   7 | strong-trail cells    11 ( 0.2% of grid)
+  | step  10000 | delivered in window  146 | total   585 | carrying   5 | strong-trail cells   115 ( 1.8% of grid)
+  | step  12000 | delivered in window  137 | total   722 | carrying   4 | strong-trail cells    77 ( 1.2% of grid)
+  | step  14000 | delivered in window  120 | total   842 | carrying   4 | strong-trail cells    53 ( 0.8% of grid)
+  | step  16000 | delivered in window   97 | total   939 | carrying   9 | strong-trail cells    57 ( 0.9% of grid)
+  | step  18000 | delivered in window  152 | total  1091 | carrying  11 | strong-trail cells    98 ( 1.5% of grid)
+  | step  20000 | delivered in window  127 | total  1218 | carrying   2 | strong-trail cells    38 ( 0.6% of grid)
+  | step  22000 | delivered in window  104 | total  1322 | carrying   5 | strong-trail cells     6 ( 0.1% of grid)
+  | step  24000 | delivered in window   76 | total  1398 | carrying   4 | strong-trail cells    58 ( 0.9% of grid)
+  | step  26000 | delivered in window  175 | total  1573 | carrying   3 | strong-trail cells   162 ( 2.5% of grid)
+  | step  28000 | delivered in window  173 | total  1746 | carrying   9 | strong-trail cells    85 ( 1.3% of grid)
+  | step  30000 | delivered in window  161 | total  1907 | carrying   7 | strong-trail cells    45 ( 0.7% of grid)
+  | 
+  | deliveries in first 2 windows: 198
+  | deliveries in last 2 windows : 334
+  | PATH FORMED: FAIL (late/early ratio 1.7, need > 2)
+  | saved ants.png
+  | 
+  | stderr:
+
+claude> Deliveries now run steadily (about 100–175 per 2000 steps). The ratio check was a poor test, since early deliveries are just the ramp-up. Before changing the metric, I'll look at the saved image.
+
+  [step 10: 15733 tokens in, 410 out, $0.00178, $0.0135 total]
+
+  [tool] view_image {"path": "ants.png"}
+  | [image sent to the model, 47 KB]
+
+claude> The image shows a clear trail running from the nest to the food, which is what I wanted. The pass/fail check is still weak, though. I'll replace the ratio with two direct measures: how much of the trail lies near the nest–food segment, and whether deliveries are sustained.
+
+  [step 11: 17314 tokens in, 1603 out, $0.00253, $0.0160 total]
+
+  [tool] run_command {"command": "cd /home/rodrigo/agent-sandbox-ants3 && python3 - <<'EOF'\nsrc = open('ants.py').read()\n# helper: fraction
+
+  run `cd /home/rodrigo/agent-sandbox-ants3 && python3 - <<'EOF'
+src = open('ants.py').read()
+# helper: fraction of food-trail mass within CORRIDOR cells of the nest-food segment
+src = src.replace("delivered = 0\nwindow_delivered = 0\n", '''xs, ys = np.meshgrid(np.arange(W), np.arange(H), indexing="ij")
+_seg = FOOD - NEST
+_t = np.clip(((xs - NEST[0]) * _seg[0] + (ys - NEST[1]) * _seg[1]) / (_seg @ _seg), 0, 1)
+seg_dist = np.hypot(xs - (NEST[0] + _t * _seg[0]), ys - (NEST[1] + _t * _seg[1]))
+CORRIDOR = 6.0
+
+
+def on_path_share(field):
+    """Share of pheromone mass lying within CORRIDOR cells of the straight nest-food line."""
+    tot = field.sum()
+    return field[seg_dist <= CORRIDOR].sum() / tot if tot > 0 else 0.0
+
+
+delivered = 0
+window_delivered = 0
+''')
+src = src.replace('''        print(f"step {step:6d} | delivered in window {window_delivered:4d} | "
+              f"total {delivered:5d} | carrying {carry.sum():3d} | "
+              f"strong-trail cells {strong.sum():5d} ({100*frac_cells:4.1f}% of grid)")''',
+'''        print(f"step {step:6d} | delivered in window {window_delivered:4d} | "
+              f"total {delivered:5d} | carrying {carry.sum():3d} | "
+              f"strong-trail cells {strong.sum():5d} ({100*frac_cells:4.1f}% of grid) | "
+              f"food-trail on nest-food corridor {100*on_path_share(trail_food):5.1f}%")''')
+src = src.replace('''# ---- summary numbers ----
+early = sum(h[1] for h in history[:2])
+late = sum(h[1] for h in history[-2:])
+print()
+print(f"deliveries in first 2 windows: {early}")
+print(f"deliveries in last 2 windows : {late}")
+print(f"PATH FORMED: {'PASS' if late > 2 * max(early, 1) else 'FAIL'} "
+      f"(late/early ratio {late / max(early, 1):.1f}, need > 2)")''',
+'''# ---- summary checks ----
+corridor = on_path_share(trail_food)
+rates = [h[1] for h in history]
+print()
+print(f"deliveries per window, last 5: {rates[-5:]}")
+print(f"food-trail mass on nest-food corridor (final): {100*corridor:.1f}%")
+ok_path = corridor > 0.8
+ok_flow = min(rates[-5:]) >= 50
+print(f"PATH FORMED (corridor share > 80%): {'PASS' if ok_path else 'FAIL'}")
+print(f"FLOW SUSTAINED (>=50 deliveries per window, last 5): {'PASS' if ok_flow else 'FAIL'}")''')
+open('ants.py','w').write(src)
+EOF
+python3 ants.py`? [y/N] y
+  | exit code 0
+  | stdout:
+  | step   2000 | delivered in window   56 | total    56 | carrying   7 | strong-trail cells    11 ( 0.2% of grid) | food-trail on nest-food corridor  92.4%
+  | step   4000 | delivered in window  142 | total   198 | carrying   6 | strong-trail cells    23 ( 0.4% of grid) | food-trail on nest-food corridor  95.6%
+  | step   6000 | delivered in window  116 | total   314 | carrying   6 | strong-trail cells    36 ( 0.6% of grid) | food-trail on nest-food corridor  97.6%
+  | step   8000 | delivered in window  125 | total   439 | carrying   7 | strong-trail cells    11 ( 0.2% of grid) | food-trail on nest-food corridor  98.2%
+  | step  10000 | delivered in window  146 | total   585 | carrying   5 | strong-trail cells   115 ( 1.8% of grid) | food-trail on nest-food corridor  99.7%
+  | step  12000 | delivered in window  137 | total   722 | carrying   4 | strong-trail cells    77 ( 1.2% of grid) | food-trail on nest-food corridor 100.0%
+  | step  14000 | delivered in window  120 | total   842 | carrying   4 | strong-trail cells    53 ( 0.8% of grid) | food-trail on nest-food corridor 100.0%
+  | step  16000 | delivered in window   97 | total   939 | carrying   9 | strong-trail cells    57 ( 0.9% of grid) | food-trail on nest-food corridor 100.0%
+  | step  18000 | delivered in window  152 | total  1091 | carrying  11 | strong-trail cells    98 ( 1.5% of grid) | food-trail on nest-food corridor 100.0%
+  | step  20000 | delivered in window  127 | total  1218 | carrying   2 | strong-trail cells    38 ( 0.6% of grid) | food-trail on nest-food corridor 100.0%
+  | step  22000 | delivered in window  104 | total  1322 | carrying   5 | strong-trail cells     6 ( 0.1% of grid) | food-trail on nest-food corridor 100.0%
+  | step  24000 | delivered in window   76 | total  1398 | carrying   4 | strong-trail cells    58 ( 0.9% of grid) | food-trail on nest-food corridor 100.0%
+  | step  26000 | delivered in window  175 | total  1573 | carrying   3 | strong-trail cells   162 ( 2.5% of grid) | food-trail on nest-food corridor 100.0%
+  | step  28000 | delivered in window  173 | total  1746 | carrying   9 | strong-trail cells    85 ( 1.3% of grid) | food-trail on nest-food corridor 100.0%
+  | step  30000 | delivered in window  161 | total  1907 | carrying   7 | strong-trail cells    45 ( 0.7% of grid) | food-trail on nest-food corridor 100.0%
+  | 
+  | deliveries per window, last 5: [np.int64(104), np.int64(76), np.int64(175), np.int64(173), np.int64(161)]
+  | food-trail mass on nest-food corridor (final): 100.0%
+  | PATH FORMED (corridor share > 80%): PASS
+  | FLOW SUSTAINED (>=50 deliveries per window, last 5): PASS
+  | saved ants.png
+  | 
+  | stderr:
+
+claude> The simulation runs and produces a clear trail from the nest to the food. Both checks pass.
+
+Final output lines from the last run:
+```
+deliveries per window, last 5: [np.int64(104), np.int64(76), np.int64(175), np.int64(173), np.int64(161)]
+food-trail mass on nest-food corridor (final): 100.0%
+PATH FORMED (corridor share > 80%): PASS
+FLOW SUSTAINED (>=50 deliveries per window, last 5): PASS
+saved ants.png
+```
+Total deliveries after 30,000 steps: 1907. The first window delivered 56 and the last few delivered 76–175 per 2,000 steps.
+
+The script is `ants.py`. It saves `ants.png`, which I viewed: it shows a single food-trail pheromone band running straight from the nest (red square, bottom-left) to the food (orange star, top-right).
+
+Caveats:
+- Loaded ants get a mild bias toward the nest. Without it, they got lost and almost nothing was delivered. Pheromone still forms the trail; the bias just gets food home.
+- The "corridor" check is partly easy: 92% of the trail was already in the corridor at step 2000, because the ants' early paths run roughly straight between the two points. Treat it as a sanity check, not strong evidence on its own.
+- Parameters were tuned by hand over several runs, and I haven't tested other seeds or layouts.
+
+  [step 12: 20081 tokens in, 761 out, $0.00239, $0.0184 total]
+

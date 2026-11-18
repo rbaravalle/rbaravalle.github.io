@@ -385,8 +385,96 @@ The ant test gave me two fixes, both small
    it, and judge whether it shows what was asked, not only whether the
    numbers pass.
 
-**[TODO: rerun the ant test with step 3 on Haiku, then on Opus for the fair
-comparison with Claude.]**
+Same prompt, same cheap Haiku model, fresh folder. 12 round trips, **less
+than 2 cents**
+([transcript]({{ '/tiny-agent/runs/step3_haiku_ants/transcript.txt' | relative_url }}),
+[code]({{ '/tiny-agent/runs/step3_haiku_ants/ants.py' | relative_url }})).
+
+The start looked like a replay: zero deliveries, run after run. But it
+debugged better this time. Instead of guessing, it wrote little probes to
+ask the simulation questions: how far are the ants from the nest? Where
+exactly are the ones stuck carrying food? The answer was precise: they were
+trapped on peaks of the trail (one cell had piled up to 57,848), bouncing
+back and forth around them. It compressed the smell (so one huge
+peak can't dominate) and stopped ants from turning straight back.
+Deliveries jumped from 11 to almost 2,000.
+
+Then the moment step 3 was built for. Its check said FAIL (it compared early
+and late deliveries, a poor test, and it said so), and before touching the
+check, it opened the picture:
+
+> The image shows a clear trail running from the nest to the food, which is
+> what I wanted.
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-haiku-ants.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Two panels after 30,000 steps, 1,907 deliveries. Left, green: the food trail is a narrow straight band from the nest at the bottom left to the food at the top right. Right, blue: the home trail is the same straight band, darker near the nest.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Step 3, Haiku: a path! Green is the trail laid by ants carrying food,
+    blue the one laid by ants searching for it.
+  </figcaption>
+</figure>
+
+A path! And for less than two cents. I was ready to declare victory. But
+the whole point of this post is that a nice picture isn't a measurement, so
+I asked Claude to do what neither the agent nor I did for the Gemini
+version: switch things off and see what changes (it's free, no model
+involved, just running the simulation:
+[the script]({{ '/tiny-agent/runs/step3_haiku_ants/check_variants.py' | relative_url }})).
+Three seeds each:
+
+| | delivered | green trail in the corridor | ants stuck with food |
+|---|---|---|---|
+| the agent's version | 1,907 / 1,733 / 1,782 | 100% | 0–7 |
+| ants ignore the smell | 1,187 / 1,197 / 1,154 | 80–92% | 3–6 |
+| no compass | 4 / 1 / 2 | 16–33% | 210–309 |
+
+Remember the compass? To get the first deliveries, the agent again gave
+ants carrying food a pull toward the nest. It called it "mild". It isn't:
+the step pointing at the nest is about twenty times more likely than the one
+pointing away. Take it out and nothing works: 300 ants wander around with
+food forever. And with the compass on and the smell switched off, the green
+line is still there:
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-haiku-ants-no-smell.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="The same simulation with ants ignoring pheromone. Left, green: still a straight band from nest to food, a bit wider and noisier. Right, blue: a cloud covering the whole map, darker around the nest, no path.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Same code, ants ignore the smell. The green line is still there: it's
+    the compass, drawing the shortest way home. The blue trail is a cloud.
+  </figcaption>
+</figure>
+
+So the green line is not emergent. It's ants carrying food walking more or
+less straight home, because they were told where home is. Of course their
+trail is a straight line. And the agent's final check, "PATH FORMED: 80% of
+the green trail near the straight nest-food line", passes with the smell
+switched off too, in all three seeds. It was written *after* the agent
+had seen the picture, so it measured the picture it already had. In
+fairness, it warned me: "the corridor check is partly easy... treat it as a
+sanity check, not strong evidence on its own."
+
+But look at the blue panels. *That's* the emergent part. With smell, the
+searching ants find the carriers' trail and follow it out to the food, and
+their own trail becomes the same narrow band. Without smell, they wander
+everywhere. That half is real: nobody tells a searching ant where the food
+is, and 50% more food gets home because of it.
+
+So: half a path. One half drawn by a compass, the other half emerging. Not
+bad for two cents. And Claude's version in the first post has no compass at
+all: ants find their way home by the trail the searchers leave behind,
+which is the harder half the tiny agent skipped twice.
+
+What made the difference between the two runs here? Not the model, it's the
+same one. The harness: seeing the whole output and seeing the picture. What
+still was missing: a comparison with the smell switched off. The step 2
+agent did that one on its own; this one didn't. Each run makes different
+choices, and nothing in my twenty lines makes it do the right experiment.
+
+**[TODO: same prompt on Opus for the fair comparison with Claude. Maybe
+also: tell it "no compass" and see if it finds the harder half.]**
 
 ## What the real ones add
 

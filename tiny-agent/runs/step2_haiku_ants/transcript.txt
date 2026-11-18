@@ -1,0 +1,453 @@
+(.venv) rodrigo@rodrigo-personal:~/agent-sandbox-ants$ python3 ~/rbaravalle.github.io/tiny-agent/step2_eyes.py --steps 60
+
+you> I want to do a visualization of emergent behavior for “ants” as they take “food” from a source to a “nest”. I want in the end to see paths forming between the foods and nests. Write it in Python. Since you can’t see the screen, print numbers that show whether paths form (for example food delivered over time), and save an image of the final state as ants.png.
+
+claude> I'll check what's available, then write the simulation.
+
+  [step 1: 793 tokens in, 223 out, $0.00019, $0.0002 total]
+
+  [tool] run_command {"command": "python3 --version; python3 -c \"import numpy, matplotlib; print('numpy', numpy.__version__, 'mpl', matplotl
+
+  run `python3 --version; python3 -c "import numpy, matplotlib; print('numpy', numpy.__version__, 'mpl', matplotlib.__version__)"`? [y/N] y
+  | exit code 1
+  | stdout:
+  | Python 3.14.4
+  | 
+  | stderr:
+  | Traceback (most recent call last):
+  |   File "<string>", line 1, in <module>
+  |     import numpy, matplotlib; print('numpy', numpy.__version__, 'mpl', matplotlib.__version__)
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^
+  | ModuleNotFoundError: No module named 'numpy'
+
+  [step 2: 1165 tokens in, 115 out, $0.00017, $0.0004 total]
+
+  [tool] run_command {"command": "python3 -m pip install numpy matplotlib 2>&1 | tail -2; python3 -c \"import numpy, matplotlib; print('ok', 
+
+  run `python3 -m pip install numpy matplotlib 2>&1 | tail -2; python3 -c "import numpy, matplotlib; print('ok', numpy.__version__, matplotlib.__version__)"`? [y/N] y
+  | exit code 0
+  | stdout:
+  | 
+  | Successfully installed contourpy-1.4.0 cycler-0.12.1 fonttools-4.68.0 kiwisolver-1.5.1 matplotlib-3.11.2 numpy-2.5.5 packaging-26.3 pillow-13.0.0 pyparsing-3.3.3 python-dateutil-4.0.0 tzdata-2026.6
+  | ok 2.5.5 3.11.2
+  | 
+  | stderr:
+
+claude> Numpy and matplotlib are installed. Next I'll write the simulation: a walled arena with a single gap, pheromone trails, and a no-pheromone random-walk run as a baseline.
+
+  [step 3: 1442 tokens in, 6198 out, $0.00324, $0.0036 total]
+
+  [tool] write_file {"path": "ants.py", "content": "\"\"\"Ant foraging with pheromone trails: food source -> nest.\n\nAnts search for food (
+  | Wrote 6594 characters to ants.py
+
+  [step 4: 7660 tokens in, 54 out, $0.00079, $0.0044 total]
+
+  [tool] run_command {"command": "time python3 ants.py"}
+
+  run `time python3 ants.py`? [y/N] y
+  | ... (34 lines hidden)
+  |   step  3500  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3600  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3700  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3800  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3900  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  4000  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  | Run B: baseline, pheromones off (random walk)
+  | 
+  | Total deliveries  pheromone=0  baseline=0
+  | Cumulative deliveries over time (step: pheromone / baseline):
+  |     500:    0 /    0
+  |    1000:    0 /    0
+  |    1500:    0 /    0
+  |    2000:    0 /    0
+  |    2500:    0 /    0
+  |    3000:    0 /    0
+  |    3500:    0 /    0
+  |    4000:    0 /    0
+  | 
+  | Food-trail concentration (mass in top 5% cells): 0.000
+  | Deliveries first 1000 steps=0, last 1000 steps=0
+  | CHECK pheromone > 2x baseline deliveries: FAIL
+  | CHECK trail concentrated (>0.15):         FAIL
+  | CHECK throughput rising over time:        FAIL
+  | 
+  | Saved ants.png
+  | 
+  | stderr:
+  | 5.85user 0.15system 0:05.04elapsed 119%CPU (0avgtext+0avgdata 105756maxresident)k
+  | 32048inputs+440outputs (5major+31829minor)pagefaults 0swaps
+
+claude> The output doesn't match the script I wrote (no "Run A:" header, and different log lines). I'll check what is actually on disk before trusting anything.
+
+  [step 5: 9713 tokens in, 293 out, $0.00112, $0.0055 total]
+
+  [tool] run_command {"command": "ls -la; head -30 ants.py; wc -l ants.py; grep -n \"Run A\\|total=\" ants.py"}
+
+  run `ls -la; head -30 ants.py; wc -l ants.py; grep -n "Run A\|total=" ants.py`? [y/N] y
+  | ... (13 lines hidden)
+  | (pure random walk) is used to check that trails actually help.
+  | """
+  | import random
+  | import numpy as np
+  | import matplotlib
+  | matplotlib.use("Agg")
+  | import matplotlib.pyplot as plt
+  | 
+  | N = 100                      # grid is N x N, indexed [x, y]
+  | NEST = (15, 15)
+  | FOOD = (85, 85)
+  | R = 3                        # radius of nest / food source
+  | N_ANTS = 150
+  | STEPS = 4000
+  | DEP = 1.0                    # pheromone deposited per step
+  | DECAY = 0.995                # per-step evaporation factor
+  | ALPHA = 3.0                  # how strongly ants follow pheromone
+  | INERTIA = 1.5                # bonus for continuing in same direction
+  | DIRS = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+  | 
+  | 
+  | def make_wall():
+  |     wall = np.zeros((N, N), dtype=bool)
+  |     wall[50, :] = True
+  | 169 ants.py
+  | 94:                print(f"  step {t:5d}  delivered_total={deliveries:4d}  "
+  | 96:                      f"food_ph_total={food_ph.sum():8.1f}")
+  | 110:    print("Run A: with pheromone trails")
+  | 
+  | stderr:
+
+claude> The file on disk is correct, so the earlier output looks inconsistent. I'll rerun and save the output to a log file to see exactly what the script prints.
+
+  [step 6: 10734 tokens in, 212 out, $0.00118, $0.0067 total]
+
+  [tool] run_command {"command": "python3 ants.py > run.log 2>&1; echo \"exit=$?\"; cat run.log"}
+
+  run `python3 ants.py > run.log 2>&1; echo "exit=$?"; cat run.log`? [y/N] y
+  | ... (32 lines hidden)
+  |   step  3300  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3400  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3500  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3600  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3700  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3800  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  3900  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  |   step  4000  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  | Run B: baseline, pheromones off (random walk)
+  | 
+  | Total deliveries  pheromone=0  baseline=0
+  | Cumulative deliveries over time (step: pheromone / baseline):
+  |     500:    0 /    0
+  |    1000:    0 /    0
+  |    1500:    0 /    0
+  |    2000:    0 /    0
+  |    2500:    0 /    0
+  |    3000:    0 /    0
+  |    3500:    0 /    0
+  |    4000:    0 /    0
+  | 
+  | Food-trail concentration (mass in top 5% cells): 0.000
+  | Deliveries first 1000 steps=0, last 1000 steps=0
+  | CHECK pheromone > 2x baseline deliveries: FAIL
+  | CHECK trail concentrated (>0.15):         FAIL
+  | CHECK throughput rising over time:        FAIL
+  | 
+  | Saved ants.png
+  | 
+  | stderr:
+
+claude> The output still doesn't match the script's own prints, so I'll rely only on the log file from now on. The real bug is clear from the numbers, though: `field = food_ph if carry else home_ph` makes searchers follow the trail they lay themselves, so they circle the nest and never reach food (0 deliveries, 0 food pheromone). Carriers should follow the home trail and searchers should follow the food trail. I'll fix that and rerun.
+
+  [step 7: 12868 tokens in, 3949 out, $0.00326, $0.0100 total]
+
+  [tool] run_command {"command": "sed -i 's/field = food_ph if a\\[\"carry\"\\] else home_ph/field = home_ph if a[\"carry\"] else food_ph/' a
+
+  run `sed -i 's/field = food_ph if a\["carry"\] else home_ph/field = home_ph if a["carry"] else food_ph/' ants.py && grep -n "field = " ants.py && python3 ants.py > run.log 2>&1; echo "exit=$?"; cat run.log`? [y/N] y
+  | ... (32 lines hidden)
+  |   step  3300  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   513.6
+  |   step  3400  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   546.4
+  |   step  3500  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   566.4
+  |   step  3600  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   578.5
+  |   step  3700  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   585.8
+  |   step  3800  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   590.2
+  |   step  3900  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   592.9
+  |   step  4000  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   594.5
+  | Run B: baseline, pheromones off (random walk)
+  | 
+  | Total deliveries  pheromone=0  baseline=0
+  | Cumulative deliveries over time (step: pheromone / baseline):
+  |     500:    0 /    0
+  |    1000:    0 /    0
+  |    1500:    0 /    0
+  |    2000:    0 /    0
+  |    2500:    0 /    0
+  |    3000:    0 /    0
+  |    3500:    0 /    0
+  |    4000:    0 /    0
+  | 
+  | Food-trail concentration (mass in top 5% cells): 0.984
+  | Deliveries first 1000 steps=0, last 1000 steps=0
+  | CHECK pheromone > 2x baseline deliveries: FAIL
+  | CHECK trail concentrated (>0.15):         PASS
+  | CHECK throughput rising over time:        FAIL
+  | 
+  | Saved ants.png
+  | 
+  | stderr:
+
+claude> Food is now being found and trails form (food-trail concentration 0.984), but deliveries are still 0 because the arena is too large for 4000 steps. I'll shrink the arena and lengthen the run, and slow evaporation so trails persist.
+
+  [step 8: 18738 tokens in, 1227 out, $0.00249, $0.0124 total]
+
+  [tool] run_command {"command": "sed -i -e 's/^N = 100 /N = 60 /' -e 's/^NEST = (15, 15)/NEST = (8, 8)/' -e 's/^FOOD = (85, 85)/FOOD = (50, 
+
+  run `sed -i -e 's/^N = 100 /N = 60 /' -e 's/^NEST = (15, 15)/NEST = (8, 8)/' -e 's/^FOOD = (85, 85)/FOOD = (50, 50)/' -e 's/^STEPS = 4000/STEPS = 6000/' -e 's/^DECAY = 0.995/DECAY = 0.998/' -e 's/wall\[50, :\] = True/wall[30, :] = True/' -e 's/wall\[50, 70:80\] = False  # single gap, off the straight line nest-food/wall[30, 38:45] = False  # single gap, off the straight line nest-food/' -e 's/step {t:5d}/step {t:5d}/' ants.py && sed -i 's/if t % 500 == 0:/if t % 1000 == 0:/; s/h\[9\]\[1\]                # deliveries in first 1000 steps/h[9][1]/; s/h\[-11\]\[1\]    # deliveries in last 1000 steps/h[-11][1]/' ants.py && grep -n "^N =\|^NEST\|^FOOD\|^STEPS\|^DECAY\|wall\[30" ants.py && python3 ants.py > run.log 2>&1; echo "exit=$?"; cat run.log`? [y/N] y
+  | ... (30 lines hidden)
+  |   step  5100  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2490.2
+  |   step  5200  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2491.0
+  |   step  5300  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2491.8
+  |   step  5400  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2492.3
+  |   step  5500  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2492.8
+  |   step  5600  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2493.2
+  |   step  5700  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2493.5
+  |   step  5800  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2493.8
+  |   step  5900  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2494.0
+  |   step  6000  delivered_total=   0  carrying=  5  ants_on_trail=150  food_ph_total=  2494.2
+  | Run B: baseline, pheromones off (random walk)
+  | 
+  | Total deliveries  pheromone=0  baseline=0
+  | Cumulative deliveries over time (step: pheromone / baseline):
+  |    1000:    0 /    0
+  |    2000:    0 /    0
+  |    3000:    0 /    0
+  |    4000:    0 /    0
+  |    5000:    0 /    0
+  |    6000:    0 /    0
+  | 
+  | Food-trail concentration (mass in top 5% cells): 1.000
+  | Deliveries first 1000 steps=0, last 1000 steps=0
+  | CHECK pheromone > 2x baseline deliveries: FAIL
+  | CHECK trail concentrated (>0.15):         PASS
+  | CHECK throughput rising over time:        FAIL
+  | 
+  | Saved ants.png
+  | 
+  | stderr:
+
+claude> Still 0 deliveries, and the carrier count stays flat at 5. The pheromone values grow without bound, so the ants' choice becomes almost deterministic and they get stuck in local maxima. I'll saturate the attraction term so it can't dominate the random choice.
+
+  [step 9: 21932 tokens in, 1016 out, $0.00270, $0.0151 total]
+
+  [tool] run_command {"command": "sed -i 's|                        w += ALPHA \\* field\\[nx, ny\\]|                        f = field[nx, ny
+
+  run `sed -i 's|                        w += ALPHA \* field\[nx, ny\]|                        f = field[nx, ny]\n                        w += ALPHA * f / (1.0 + f)  # saturating: keeps randomness|' ants.py && sed -i 's/^ALPHA = 3.0 /ALPHA = 4.0 /' ants.py && grep -n "ALPHA" ants.py && python3 ants.py > run.log 2>&1; echo "exit=$?"; tail -25 run.log`? [y/N] y
+  | ... (2 lines hidden)
+  | 23:ALPHA = 4.0                  # how strongly ants follow pheromone
+  | 65:                        w += ALPHA * f / (1.0 + f)  # saturating: keeps randomness
+  | exit=0
+  |   step  5400  delivered_total=  11  carrying= 55  ants_on_trail=150  food_ph_total= 25577.8
+  |   step  5500  delivered_total=  11  carrying= 56  ants_on_trail=150  food_ph_total= 25985.3
+  |   step  5600  delivered_total=  11  carrying= 56  ants_on_trail=150  food_ph_total= 26340.7
+  |   step  5700  delivered_total=  12  carrying= 56  ants_on_trail=150  food_ph_total= 26618.9
+  |   step  5800  delivered_total=  13  carrying= 56  ants_on_trail=150  food_ph_total= 26911.4
+  |   step  5900  delivered_total=  13  carrying= 56  ants_on_trail=150  food_ph_total= 27098.7
+  |   step  6000  delivered_total=  13  carrying= 58  ants_on_trail=150  food_ph_total= 27338.8
+  | Run B: baseline, pheromones off (random walk)
+  | 
+  | Total deliveries  pheromone=13  baseline=0
+  | Cumulative deliveries over time (step: pheromone / baseline):
+  |    1000:    0 /    0
+  |    2000:    0 /    0
+  |    3000:    2 /    0
+  |    4000:    7 /    0
+  |    5000:    9 /    0
+  |    6000:   13 /    0
+  | 
+  | Food-trail concentration (mass in top 5% cells): 0.134
+  | Deliveries first 1000 steps=0, last 1000 steps=4
+  | CHECK pheromone > 2x baseline deliveries: PASS
+  | CHECK trail concentrated (>0.15):         FAIL
+  | CHECK throughput rising over time:        PASS
+  | 
+  | Saved ants.png
+  | 
+  | stderr:
+
+claude> Now there are 13 deliveries versus 0 for the random-walk baseline, and throughput rises over time. But 58 ants are still stuck carrying, so carriers rarely get home. I'll add a mild homing bias for carriers and run longer, then check the numbers again.
+
+  [step 10: 23601 tokens in, 1411 out, $0.00307, $0.0182 total]
+
+  [tool] run_command {"command": "python3 - <<'EOF'\nimport re\ns = open('ants.py').read()\ns = s.replace(\"INERTIA = 1.5                # bo
+
+  run `python3 - <<'EOF'
+import re
+s = open('ants.py').read()
+s = s.replace("INERTIA = 1.5                # bonus for continuing in same direction",
+"INERTIA = 1.5                # bonus for continuing in same direction\nHOME_W = 0.5                 # carriers get a mild bonus for steps toward the nest\nSTEPS_DEFAULT = 10000")
+s = s.replace("STEPS = 6000", "STEPS = STEPS_DEFAULT")
+s = s.replace("""                    if (dx, dy) == a["d"]:
+                        w *= INERTIA""",
+"""                    if (dx, dy) == a["d"]:
+                        w *= INERTIA
+                    if a["carry"] and cheb((nx, ny), NEST) < cheb((x, y), NEST):
+                        w += HOME_W""")
+s = s.replace("if t % 1000 == 0:", "if t % 2000 == 0:")
+s = s.replace("if t % 100 == 0:", "if t % 100 == 0:")
+s = s.replace("        if t % 1000 == 0:", "        if t % 1000 == 0:")
+open('ants.py','w').write(s)
+EOF
+grep -n "STEPS\|HOME_W\|t % " ants.py; python3 ants.py > run.log 2>&1; echo "exit=$?"; tail -22 run.log`? 
+[y/N] y
+  | exit code 0
+  | stdout:
+  | 20:STEPS = STEPS_DEFAULT
+  | 25:HOME_W = 0.5                 # carriers get a mild bonus for steps toward the nest
+  | 26:STEPS_DEFAULT = 10000
+  | 54:    for t in range(1, STEPS + 1):
+  | 71:                        w += HOME_W
+  | 93:        if t % 100 == 0:
+  | 123:        if t % 2000 == 0:
+  | 154:    ax.set_title(f"Final state (step {STEPS}), log pheromone")
+  | exit=1
+  | Traceback (most recent call last):
+  |   File "/home/rodrigo/agent-sandbox-ants/ants.py", line 20, in <module>
+  |     STEPS = STEPS_DEFAULT
+  |             ^^^^^^^^^^^^^
+  | NameError: name 'STEPS_DEFAULT' is not defined
+  | 
+  | stderr:
+
+claude> The constant is defined after it is used, so I'll swap the lines and rerun.
+
+  [step 11: 25307 tokens in, 311 out, $0.00269, $0.0209 total]
+
+  [tool] run_command {"command": "sed -i 's/^STEPS = STEPS_DEFAULT/STEPS = 10000/; /^STEPS_DEFAULT = 10000/d' ants.py && python3 ants.py > ru
+
+  run `sed -i 's/^STEPS = STEPS_DEFAULT/STEPS = 10000/; /^STEPS_DEFAULT = 10000/d' ants.py && python3 ants.py > run.log 2>&1; echo "exit=$?"; tail -24 run.log`? [y/N] y
+  | exit code 0
+  | stdout:
+  | exit=0
+  |   step  9400  delivered_total=  75  carrying= 39  ants_on_trail=150  food_ph_total= 20415.0
+  |   step  9500  delivered_total=  75  carrying= 41  ants_on_trail=150  food_ph_total= 20277.8
+  |   step  9600  delivered_total=  76  carrying= 40  ants_on_trail=150  food_ph_total= 20240.2
+  |   step  9700  delivered_total=  77  carrying= 39  ants_on_trail=150  food_ph_total= 20148.2
+  |   step  9800  delivered_total=  77  carrying= 39  ants_on_trail=150  food_ph_total= 20023.5
+  |   step  9900  delivered_total=  77  carrying= 41  ants_on_trail=150  food_ph_total= 20027.3
+  |   step 10000  delivered_total=  78  carrying= 44  ants_on_trail=150  food_ph_total= 20284.7
+  | Run B: baseline, pheromones off (random walk)
+  | 
+  | Total deliveries  pheromone=78  baseline=33
+  | Cumulative deliveries over time (step: pheromone / baseline):
+  |    2000:    0 /    1
+  |    4000:    8 /    4
+  |    6000:   22 /   13
+  |    8000:   60 /   22
+  |   10000:   78 /   33
+  | 
+  | Food-trail concentration (mass in top 5% cells): 0.247
+  | Deliveries first 1000 steps=0, last 1000 steps=10
+  | CHECK pheromone > 2x baseline deliveries: PASS
+  | CHECK trail concentrated (>0.15):         PASS
+  | CHECK throughput rising over time:        PASS
+  | 
+  | Saved ants.png
+  | 
+  | stderr:
+
+claude> Now the numbers show a clear gap: 78 deliveries with pheromones versus 33 without, and the throughput rises over time. Two things to fix before I finish. The baseline still has the homing bias, so the docstring's "pure random walk" is wrong. I'll also add an ASCII map of the trail so the path shape is visible in text.
+
+  [step 12: 26196 tokens in, 1058 out, $0.00315, $0.0240 total]
+
+  [tool] run_command {"command": "python3 - <<'EOF'\ns = open('ants.py').read()\ns = s.replace(\"(pure random walk) is used to check that tra
+
+  run `python3 - <<'EOF'
+s = open('ants.py').read()
+s = s.replace("(pure random walk) is used to check that trails actually help.",
+"(search + homing bias still on, no pheromone) is used to check that trails help.")
+s = s.replace("def main():", '''def ascii_map(A, step=2):
+    """Coarse text picture of the food->nest trail (N = nest, F = food, # = wall)."""
+    f = A["food_ph"]
+    chars = " .:-=+*#%@"
+    mx = f.max() if f.max() > 0 else 1.0
+    print("\\nASCII trail map (x across, y up; each char = %dx%d cells):" % (step, step))
+    for y in range(N - 1, -1, -step):
+        row = ""
+        for x in range(0, N, step):
+            cx, cy = x, y
+            if cheb((cx, cy), NEST) <= R:
+                row += "N"
+            elif cheb((cx, cy), FOOD) <= R:
+                row += "F"
+            elif A["wall"][cx, cy]:
+                row += "#"
+            else:
+                v = f[x:x + step, y - step + 1:y + 1].max() / mx
+                row += chars[min(len(chars) - 1, int(v * (len(chars) - 1)))]
+        print("  " + row)
+
+
+def main():''')
+s = s.replace('    print("\\nSaved ants.png")', '    ascii_map(A)\n    print("\\nSaved ants.png")')
+open('ants.py','w').write(s)
+EOF
+python3 ants.py > run.log 2>&1; echo "exit=$?"; grep -v "  step" run.log; ls -la ants.png`? [y/N] y
+  | ... (26 lines hidden)
+  |                  #::::.:-.FFF   
+  |          .    .. #:.::-:::FFF   
+  |         ... .....#.:--=--:...   
+  |         .. .....:.-:-==+-:..:.  
+  |         .. ...::..::-----:..:.  
+  |       ..  . ..:.::---===::..::..
+  |       ..   ....:.#-=-=--::.::::.
+  |               .:.#====-=::::::: 
+  |             :...:#*==---::....  
+  |             .....#=-----::..    
+  |       .... ....  #+*+-::::..    
+  |   .... ..  ... . #+**-..-:::..  
+  |     .         .  #+++--::-.:.   
+  |              ... #*++-::... .   
+  |               .: #*++=-....     
+  |               ...#+++=-:...     
+  |               .  #*#*=-::.:.    
+  |                  ###%+=-:.::..  
+  |                  #%**=-:::...   
+  |      NNN         #*++=---::..   
+  |      NNN         #*++=-:::::    
+  |      NNN         #+*=-=-:.::    
+  |      NNN         #%+=-:::.... ..
+  |                  #%*=::...::....
+  |                  #@+=: ...:-: ..
+  | 
+  | Saved ants.png
+  | -rw-rw-r-- 1 rodrigo rodrigo 125630 Nov 18 22:40 ants.png
+  | 
+  | stderr:
+
+claude> The simulation is in `ants.py`. It saves `ants.png` and prints numbers showing that trails help: 78 deliveries with pheromone versus 33 without.
+
+Output from `run.log`:
+```
+Total deliveries  pheromone=78  baseline=33
+Cumulative deliveries over time (step: pheromone / baseline):
+   2000:    0 /    1
+   4000:    8 /    4
+   6000:   22 /   13
+   8000:   60 /   22
+  10000:   78 /   33
+Food-trail concentration (mass in top 5% cells): 0.247
+Deliveries first 1000 steps=0, last 1000 steps=10
+CHECK pheromone > 2x baseline deliveries: PASS
+CHECK trail concentrated (>0.15):         PASS
+CHECK throughput rising over time:        PASS
+```
+
+Notes:
+- **Setup:** 150 ants on a 60×60 grid, nest at (8,8), food at (50,50), and a wall at x=30 with one gap at y=38–44. Searching ants follow a food trail laid by carriers, and carrying ants follow a home trail laid by searchers.
+- **Deviation from pure emergence:** carriers have a mild bonus for steps toward the nest. Without it, too many ants got stuck carrying. The baseline keeps this bonus, so the comparison isolates the pheromone effect.
+- **Caveat on the path:** the ASCII map shows a broad band through the gap, not a crisp line all the way to the nest. The trail is only partly formed. The 0.15 concentration threshold is my choice, and the pheromone run passes it at 0.247.
+- **Bugs fixed along the way:** the searchers were following their own trail, and the pheromone values were growing without bound. Both are fixed; the current code is what produced the numbers above.
+- I couldn't view `ants.png`, so I checked the image only by file existence and the printed numbers.
+
+Files are in the current directory: `ants.py`, `ants.png`, and `run.log`.
+
+  [step 13: 28008 tokens in, 1893 out, $0.00375, $0.0278 total]
+

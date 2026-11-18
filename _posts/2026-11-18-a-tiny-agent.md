@@ -274,14 +274,131 @@ good as the question it asks. Something to watch in the next test.
 
 ## The test: the ants again
 
-**[TODO]** Give the tiny agent the same ant task I gave Claude, with the same
-short prompt. Success or failure, compare honestly with what Claude did.
+Time for the real exam. I gave the tiny agent (step 2, still the cheap
+Haiku model) the same short request I gave Claude in the first post, plus
+one sentence, because this agent can't see a screen:
+
+> I want to do a visualization of emergent behavior for "ants" as they take
+> "food" from a source to a "nest". I want in the end to see paths forming
+> between the foods and nests. Write it in Python. Since you can't see the
+> screen, print numbers that show whether paths form (for example food
+> delivered over time), and save an image of the final state as ants.png.
+
+I raised the step limit to 60 and pressed `y` a lot. It needed 13 round
+trips and about **3 cents**
+([full transcript]({{ '/tiny-agent/runs/step2_haiku_ants/transcript.txt' | relative_url }}),
+[the code it wrote]({{ '/tiny-agent/runs/step2_haiku_ants/ants.py' | relative_url }})).
+And it ended like this:
+
+```
+Total deliveries  pheromone=78  baseline=33
+CHECK pheromone > 2x baseline deliveries: PASS
+CHECK trail concentrated (>0.15):         PASS
+CHECK throughput rising over time:        PASS
+```
+
+Three PASS lines. Success? Here is the image it saved:
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step2-haiku-ants.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Three panels after 10,000 steps: the left one shows pheromone covering almost the whole map, with the nest bottom left, the food top right and a wall with one gap in the middle. The red food-trail panel and the blue nest-trail panel are broad clouds filling each half of the map. No paths.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    The tiny agent's final state. Left: all pheromone, with the nest (green
+    square), the food (star) and a wall it decided to add. Middle and right:
+    the two trails. Clouds, not paths.
+  </figcaption>
+</figure>
+
+No paths. Pheromone everywhere. So what happened in those 13 steps?
+
+**The good part: it measured, and it fixed real bugs.** Without being asked,
+it built in a comparison: the same simulation with pheromones switched off.
+That's exactly the test nobody did for the Gemini version in the first post.
+Its first version delivered zero food, and from the numbers (no food
+pheromone at all) it found the bug: searching ants were following their *own*
+trail instead of the one left by ants carrying food. One-line fix. Then the
+pheromone values grew without limit and every ant got stuck on the strongest
+cell; it capped how much a smell can attract. Measure, find, fix, measure
+again. That's the loop working.
+
+**The confusing part was my fault.** Halfway through, it said:
+
+> The output doesn't match the script I wrote (no "Run A:" header, and
+> different log lines). I'll check what is actually on disk before trusting
+> anything.
+
+It checked the file. The file was fine. It ran again, saved the output to a
+log, printed the log: still "doesn't match". It gave up on the mystery and
+carried on. The cause was in *my* twenty lines: to keep the conversation
+short, `run_tool` only sends back the last 4,000 characters of the output.
+The program printed about 4,300, so the first lines, including the `Run A:`
+header, never reached the model. It was seeing a page torn out of the
+middle of a book and, very reasonably, concluding that the book was wrong.
+Nothing told it a page was missing, so it never found out.
+
+**The weak part: the checks asked easier questions than I did.** Look at
+the three PASS lines again with the picture next to them:
+
+- *"pheromone > 2x baseline"*: true, 78 against 33. But to get there it gave
+  ants carrying food a pull toward the nest, the same built-in compass the
+  Gemini version had. To its credit, it told me ("Deviation from pure
+  emergence"), and it kept the compass in the comparison run too, so the
+  comparison is fair. It still isn't paths.
+- *"trail concentrated (>0.15)"*: the busiest 5% of the cells hold 24.7% of
+  the pheromone. A threshold it picked itself, and far from a path.
+- *"throughput rising"*: true, and even at the end 44 of the 150 ants are
+  still wandering around with food they can't bring home.
+- And one number never moved: `ants_on_trail=150`, in every line of every
+  run. Pheromone is everywhere, so every ant is "on a trail". A measurement
+  that can't change measures nothing, and nobody noticed.
+
+And then the part I found most interesting. Every ant drops the same amount
+of pheromone on every step, however long ago it left the nest or the food.
+That's exactly my mistake from 2016: the map records *traffic*, not
+*information*. The tiny agent walked straight into the trap I fell into, and
+the one Claude's version had to get out of with its "fresh ants only" rule.
+
+In fairness, its final message said "the trail is only partly formed" and
+"I couldn't view `ants.png`". Every number it gave me was real. It didn't
+lie; it graded its own homework with questions it wrote itself, and it
+couldn't look at the drawing. So, measuring is necessary, but it's not
+enough: you also have to measure the *right thing*, and the real goal here
+("I want to *see* paths") is visual.
+
+Claude, in the first post, ran about 150 simulations over 30 minutes and
+took screenshots of its own result. The tiny agent ran 7, in 13 steps, for 3
+cents, blind.
+
+## Step 3: real eyes
+
+The ant test gave me two fixes, both small
+([step3_vision.py]({{ '/tiny-agent/step3_vision.py' | relative_url }})):
+
+1. **No more torn pages.** Long output now keeps the start *and* the end,
+   with a note in the middle: `[... 9890 characters cut from the middle ...]`.
+   The agent can't avoid cut output, but now it knows when something is
+   missing.
+2. **A `view_image` tool.** It reads an image file and sends it back to the
+   model as a picture instead of text. The model can look at `ants.png`.
+   And one more line in the instructions: when you save an image, look at
+   it, and judge whether it shows what was asked, not only whether the
+   numbers pass.
+
+**[TODO: rerun the ant test with step 3 on Haiku, then on Opus for the fair
+comparison with Claude.]**
 
 ## What the real ones add
 
-**[TODO]** The problems the tiny agent runs into, found by hitting them:
-forgetting things on long tasks (all those re-sent tokens), clumsy edits to
-big files (it can only overwrite whole files), commands it shouldn't run.
+**[TODO]** The problems the tiny agent runs into, found by hitting them.
+So far:
+- Cut output with nothing saying it was cut (the "Run A:" mystery).
+- Clumsy edits: it only has "overwrite the whole file", so it edited
+  `ants.py` with long `sed` one-liners and inline Python scripts, and broke
+  it once (a constant used before it was defined).
+- Re-sent conversation: the input grew from 793 to 28,008 tokens in 13 steps.
+- Typing `y` dozens of times. Permissions are a real design problem.
+
 These are the things products like Claude Code solve.
 
 ## What I take away

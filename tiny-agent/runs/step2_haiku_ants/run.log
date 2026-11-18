@@ -1,0 +1,150 @@
+Run A: with pheromone trails
+  step   100  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  step   200  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  step   300  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  step   400  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  step   500  delivered_total=   0  carrying=  0  ants_on_trail=150  food_ph_total=     0.0
+  step   600  delivered_total=   0  carrying=  1  ants_on_trail=150  food_ph_total=    80.6
+  step   700  delivered_total=   0  carrying=  1  ants_on_trail=150  food_ph_total=   156.5
+  step   800  delivered_total=   0  carrying=  2  ants_on_trail=150  food_ph_total=   303.4
+  step   900  delivered_total=   0  carrying=  2  ants_on_trail=150  food_ph_total=   429.4
+  step  1000  delivered_total=   0  carrying=  2  ants_on_trail=150  food_ph_total=   532.6
+  step  1100  delivered_total=   0  carrying=  2  ants_on_trail=150  food_ph_total=   617.0
+  step  1200  delivered_total=   0  carrying=  3  ants_on_trail=150  food_ph_total=   751.4
+  step  1300  delivered_total=   0  carrying=  4  ants_on_trail=150  food_ph_total=   932.4
+  step  1400  delivered_total=   0  carrying=  8  ants_on_trail=150  food_ph_total=  1354.9
+  step  1500  delivered_total=   0  carrying=  8  ants_on_trail=150  food_ph_total=  1833.4
+  step  1600  delivered_total=   0  carrying=  8  ants_on_trail=150  food_ph_total=  2225.0
+  step  1700  delivered_total=   0  carrying=  8  ants_on_trail=150  food_ph_total=  2545.6
+  step  1800  delivered_total=   0  carrying=  9  ants_on_trail=150  food_ph_total=  2813.0
+  step  1900  delivered_total=   0  carrying= 13  ants_on_trail=150  food_ph_total=  3275.1
+  step  2000  delivered_total=   0  carrying= 15  ants_on_trail=150  food_ph_total=  3978.6
+  step  2100  delivered_total=   0  carrying= 17  ants_on_trail=150  food_ph_total=  4670.1
+  step  2200  delivered_total=   0  carrying= 19  ants_on_trail=150  food_ph_total=  5522.9
+  step  2300  delivered_total=   0  carrying= 20  ants_on_trail=150  food_ph_total=  6250.0
+  step  2400  delivered_total=   2  carrying= 18  ants_on_trail=150  food_ph_total=  6799.7
+  step  2500  delivered_total=   2  carrying= 19  ants_on_trail=150  food_ph_total=  7285.4
+  step  2600  delivered_total=   3  carrying= 20  ants_on_trail=150  food_ph_total=  7664.4
+  step  2700  delivered_total=   3  carrying= 23  ants_on_trail=150  food_ph_total=  8231.9
+  step  2800  delivered_total=   3  carrying= 29  ants_on_trail=150  food_ph_total=  8967.4
+  step  2900  delivered_total=   3  carrying= 31  ants_on_trail=150  food_ph_total= 10020.6
+  step  3000  delivered_total=   3  carrying= 33  ants_on_trail=150  food_ph_total= 11081.9
+  step  3100  delivered_total=   3  carrying= 38  ants_on_trail=150  food_ph_total= 12353.9
+  step  3200  delivered_total=   3  carrying= 40  ants_on_trail=150  food_ph_total= 13656.4
+  step  3300  delivered_total=   4  carrying= 40  ants_on_trail=150  food_ph_total= 14772.1
+  step  3400  delivered_total=   4  carrying= 42  ants_on_trail=150  food_ph_total= 15824.6
+  step  3500  delivered_total=   4  carrying= 45  ants_on_trail=150  food_ph_total= 16962.6
+  step  3600  delivered_total=   5  carrying= 45  ants_on_trail=150  food_ph_total= 17922.2
+  step  3700  delivered_total=   6  carrying= 44  ants_on_trail=150  food_ph_total= 18713.6
+  step  3800  delivered_total=   6  carrying= 46  ants_on_trail=150  food_ph_total= 19420.8
+  step  3900  delivered_total=   6  carrying= 47  ants_on_trail=150  food_ph_total= 20134.0
+  step  4000  delivered_total=   8  carrying= 45  ants_on_trail=150  food_ph_total= 20603.1
+  step  4100  delivered_total=   9  carrying= 47  ants_on_trail=150  food_ph_total= 21022.8
+  step  4200  delivered_total=   9  carrying= 49  ants_on_trail=150  food_ph_total= 21579.8
+  step  4300  delivered_total=  10  carrying= 50  ants_on_trail=150  food_ph_total= 22239.2
+  step  4400  delivered_total=  13  carrying= 51  ants_on_trail=150  food_ph_total= 22785.3
+  step  4500  delivered_total=  14  carrying= 50  ants_on_trail=150  food_ph_total= 23235.7
+  step  4600  delivered_total=  15  carrying= 51  ants_on_trail=150  food_ph_total= 23661.3
+  step  4700  delivered_total=  16  carrying= 52  ants_on_trail=150  food_ph_total= 24078.0
+  step  4800  delivered_total=  16  carrying= 54  ants_on_trail=150  food_ph_total= 24590.9
+  step  4900  delivered_total=  16  carrying= 54  ants_on_trail=150  food_ph_total= 25018.2
+  step  5000  delivered_total=  16  carrying= 54  ants_on_trail=150  food_ph_total= 25368.0
+  step  5100  delivered_total=  16  carrying= 56  ants_on_trail=150  food_ph_total= 25741.1
+  step  5200  delivered_total=  16  carrying= 57  ants_on_trail=150  food_ph_total= 26209.5
+  step  5300  delivered_total=  16  carrying= 58  ants_on_trail=150  food_ph_total= 26621.7
+  step  5400  delivered_total=  18  carrying= 56  ants_on_trail=150  food_ph_total= 26954.2
+  step  5500  delivered_total=  18  carrying= 59  ants_on_trail=150  food_ph_total= 27317.6
+  step  5600  delivered_total=  19  carrying= 59  ants_on_trail=150  food_ph_total= 27716.4
+  step  5700  delivered_total=  20  carrying= 59  ants_on_trail=150  food_ph_total= 28070.8
+  step  5800  delivered_total=  21  carrying= 58  ants_on_trail=150  food_ph_total= 28262.1
+  step  5900  delivered_total=  21  carrying= 59  ants_on_trail=150  food_ph_total= 28385.4
+  step  6000  delivered_total=  22  carrying= 61  ants_on_trail=150  food_ph_total= 28639.0
+  step  6100  delivered_total=  25  carrying= 60  ants_on_trail=150  food_ph_total= 28863.7
+  step  6200  delivered_total=  26  carrying= 59  ants_on_trail=150  food_ph_total= 29048.1
+  step  6300  delivered_total=  27  carrying= 58  ants_on_trail=150  food_ph_total= 29062.0
+  step  6400  delivered_total=  27  carrying= 59  ants_on_trail=150  food_ph_total= 29120.8
+  step  6500  delivered_total=  27  carrying= 60  ants_on_trail=150  food_ph_total= 29246.8
+  step  6600  delivered_total=  30  carrying= 59  ants_on_trail=150  food_ph_total= 29300.3
+  step  6700  delivered_total=  33  carrying= 57  ants_on_trail=150  food_ph_total= 29181.2
+  step  6800  delivered_total=  34  carrying= 56  ants_on_trail=150  food_ph_total= 28971.7
+  step  6900  delivered_total=  38  carrying= 52  ants_on_trail=150  food_ph_total= 28556.8
+  step  7000  delivered_total=  41  carrying= 49  ants_on_trail=150  food_ph_total= 27996.6
+  step  7100  delivered_total=  41  carrying= 49  ants_on_trail=150  food_ph_total= 27353.3
+  step  7200  delivered_total=  43  carrying= 47  ants_on_trail=150  food_ph_total= 26765.5
+  step  7300  delivered_total=  45  carrying= 45  ants_on_trail=150  food_ph_total= 26049.6
+  step  7400  delivered_total=  47  carrying= 46  ants_on_trail=150  food_ph_total= 25430.3
+  step  7500  delivered_total=  53  carrying= 41  ants_on_trail=150  food_ph_total= 24654.8
+  step  7600  delivered_total=  54  carrying= 41  ants_on_trail=150  food_ph_total= 23877.7
+  step  7700  delivered_total=  57  carrying= 42  ants_on_trail=150  food_ph_total= 23359.9
+  step  7800  delivered_total=  57  carrying= 43  ants_on_trail=150  food_ph_total= 23012.2
+  step  7900  delivered_total=  59  carrying= 42  ants_on_trail=150  food_ph_total= 22625.7
+  step  8000  delivered_total=  60  carrying= 42  ants_on_trail=150  food_ph_total= 22267.9
+  step  8100  delivered_total=  62  carrying= 40  ants_on_trail=150  food_ph_total= 21948.0
+  step  8200  delivered_total=  62  carrying= 43  ants_on_trail=150  food_ph_total= 21752.6
+  step  8300  delivered_total=  63  carrying= 42  ants_on_trail=150  food_ph_total= 21666.2
+  step  8400  delivered_total=  64  carrying= 42  ants_on_trail=150  food_ph_total= 21566.8
+  step  8500  delivered_total=  65  carrying= 43  ants_on_trail=150  food_ph_total= 21597.2
+  step  8600  delivered_total=  65  carrying= 44  ants_on_trail=150  food_ph_total= 21623.8
+  step  8700  delivered_total=  66  carrying= 43  ants_on_trail=150  food_ph_total= 21623.2
+  step  8800  delivered_total=  66  carrying= 44  ants_on_trail=150  food_ph_total= 21655.7
+  step  8900  delivered_total=  67  carrying= 43  ants_on_trail=150  food_ph_total= 21666.2
+  step  9000  delivered_total=  68  carrying= 42  ants_on_trail=150  food_ph_total= 21627.3
+  step  9100  delivered_total=  70  carrying= 40  ants_on_trail=150  food_ph_total= 21331.4
+  step  9200  delivered_total=  73  carrying= 38  ants_on_trail=150  food_ph_total= 21091.1
+  step  9300  delivered_total=  75  carrying= 38  ants_on_trail=150  food_ph_total= 20706.2
+  step  9400  delivered_total=  75  carrying= 39  ants_on_trail=150  food_ph_total= 20415.0
+  step  9500  delivered_total=  75  carrying= 41  ants_on_trail=150  food_ph_total= 20277.8
+  step  9600  delivered_total=  76  carrying= 40  ants_on_trail=150  food_ph_total= 20240.2
+  step  9700  delivered_total=  77  carrying= 39  ants_on_trail=150  food_ph_total= 20148.2
+  step  9800  delivered_total=  77  carrying= 39  ants_on_trail=150  food_ph_total= 20023.5
+  step  9900  delivered_total=  77  carrying= 41  ants_on_trail=150  food_ph_total= 20027.3
+  step 10000  delivered_total=  78  carrying= 44  ants_on_trail=150  food_ph_total= 20284.7
+Run B: baseline, pheromones off (random walk)
+
+Total deliveries  pheromone=78  baseline=33
+Cumulative deliveries over time (step: pheromone / baseline):
+   2000:    0 /    1
+   4000:    8 /    4
+   6000:   22 /   13
+   8000:   60 /   22
+  10000:   78 /   33
+
+Food-trail concentration (mass in top 5% cells): 0.247
+Deliveries first 1000 steps=0, last 1000 steps=10
+CHECK pheromone > 2x baseline deliveries: PASS
+CHECK trail concentrated (>0.15):         PASS
+CHECK throughput rising over time:        PASS
+
+ASCII trail map (x across, y up; each char = 2x2 cells):
+                 #              
+                 #              
+                 #              
+                 #     .. FFF   
+                 #. . ..::FFF   
+                 #::::.:-.FFF   
+         .    .. #:.::-:::FFF   
+        ... .....#.:--=--:...   
+        .. .....:.-:-==+-:..:.  
+        .. ...::..::-----:..:.  
+      ..  . ..:.::---===::..::..
+      ..   ....:.#-=-=--::.::::.
+              .:.#====-=::::::: 
+            :...:#*==---::....  
+            .....#=-----::..    
+      .... ....  #+*+-::::..    
+  .... ..  ... . #+**-..-:::..  
+    .         .  #+++--::-.:.   
+             ... #*++-::... .   
+              .: #*++=-....     
+              ...#+++=-:...     
+              .  #*#*=-::.:.    
+                 ###%+=-:.::..  
+                 #%**=-:::...   
+     NNN         #*++=---::..   
+     NNN         #*++=-:::::    
+     NNN         #+*=-=-:.::    
+     NNN         #%+=-:::.... ..
+                 #%*=::...::....
+                 #@+=: ...:-: ..
+
+Saved ants.png

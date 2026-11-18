@@ -1,6 +1,21 @@
 # Projects shown on /projects/, newest first.
 # To add a picture: put the file in assets/projects/ and set `image:` to its name.
 
+- title: "ROS 2 autonomy demos: fast mapping and cleaning missions"
+  meta: "iRobot · 2025 · engineering manager · internal project"
+  description: >-
+    I led a partly new team through two live demos of iRobot's new ROS 2
+    autonomy stack, both presented to the executive team, guiding the
+    mapping, planning and ML subteams. In the first, a robot built a map of
+    its environment quickly, alongside an ML demo of our revived stack running
+    on a production robot. I set up the robots remotely and tracked the health
+    of the demo day to day. In the second, the robot loaded a map it had
+    built earlier and used it to clean, following systematic cleaning paths
+    and responding to cliffs and other hazards. A live ML demo on new hardware
+    and sensors showed object detection, floor-type segmentation and room
+    identification.
+  links: []
+
 - title: "sem2umf: robot maps in the cloud"
   meta: "iRobot · 2021 · owner and sole developer"
   description: >-

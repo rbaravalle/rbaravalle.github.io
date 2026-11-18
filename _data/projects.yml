@@ -1,6 +1,30 @@
 # Projects shown on /projects/, newest first.
 # To add a picture: put the file in assets/projects/ and set `image:` to its name.
 
+- title: "Exploratory R&D: perception, learning and 3D on embedded robots"
+  meta: "iRobot · 2026 · engineering manager · internal projects"
+  description: >-
+    In 2026 my team took on several new lines of work, mostly exploratory:
+  bullets:
+    - "Embedded object detection with YOLO-NAS and RF-DETR, aiming for better on-robot object identification (close to production release)"
+    - "Federated learning with NVIDIA FLARE, training models across robots without centralising their data"
+    - "Integrating our visual SLAM with lidar SLAM"
+    - "Embedded 3D reconstruction with feed-forward Gaussian splatting (YoNoSplat, ReCoSplat)"
+    - "First steps with NVIDIA Isaac Sim for simulation"
+  links:
+    - label: "YOLO-NAS"
+      url: "https://github.com/Deci-AI/super-gradients"
+    - label: "RF-DETR"
+      url: "https://github.com/roboflow/rf-detr"
+    - label: "NVIDIA FLARE"
+      url: "https://github.com/NVIDIA/NVFlare"
+    - label: "YoNoSplat"
+      url: "https://botaoye.github.io/yonosplat/"
+    - label: "ReCoSplat"
+      url: "https://freemancheng.com/ReCoSplat"
+    - label: "Isaac Sim"
+      url: "https://developer.nvidia.com/isaac/sim"
+
 - title: "ROS 2 autonomy demos: fast mapping and cleaning missions"
   meta: "iRobot · 2025 · engineering manager · internal project"
   description: >-

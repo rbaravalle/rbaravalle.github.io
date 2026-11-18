@@ -13,6 +13,13 @@ permalink: /projects/
     <h2 class="project-title">{{ p.title }}</h2>
     <p class="project-meta">{{ p.meta }}</p>
     <p>{{ p.description }}</p>
+    {%- if p.bullets %}
+    <ul class="project-bullets">
+      {%- for b in p.bullets %}
+      <li>{{ b }}</li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
     {%- if p.figure %}
     <img class="project-figure" src="{{ '/assets/projects/' | append: p.figure | relative_url }}" alt="{{ p.title }} diagram">
     {%- endif %}

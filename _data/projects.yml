@@ -46,16 +46,16 @@
     Other pieces of mapping and product work, from features I built myself to
     ones I coordinated across teams:
   bullets:
-    - "<strong>map2geojson (2024–2026):</strong> Python scripts converting new map formats from OEM partners, running in AWS Lambda. Similar in spirit to sem2umf but simpler, with very few production errors."
-    - "<strong>Visual Dirt Detective (2023):</strong> project manager, coordinating several mapping and planning subteams."
+    - "<strong>map2geojson (2024–2026):</strong> Python scripts converting new map formats from OEM partners, running in AWS Lambda. Similar in spirit to map2json but simpler, with very few production errors."
+    - "<strong>Visual Dirt Detective (2023):</strong> project manager, coordinating several mapping and planning subteams. I also wrote the C++ code on the robot that extracts polygons from the semantic map."
     - "<strong>Clutter fields (2023):</strong> marking whole cluttered areas the robot should avoid so it doesn't get stuck, using simple morphological opening and closing on the map."
-    - "<strong>No-mop zones (2022):</strong> as squad lead I coordinated the feature end to end, and implemented the sem2umf side."
-    - "<strong>Shared maps between robots:</strong> letting a mop and a vacuum use the same map. It worked but never shipped, because combined mop-and-vacuum robots removed the need."
+    - "<strong>No-mop zones (2022):</strong> as squad lead I coordinated the feature end to end, and implemented the map2json side."
+    - "<strong>Shared maps between robots (2021–2022):</strong> letting a mop and a vacuum share one map. Combined mop-and-vacuum robots made ongoing sharing unnecessary, but it was used for a one-time copy, so a new robot could start with an existing map instead of mapping the same home again."
     - "<strong>Coverage polygons (2021):</strong> drawing where the robot cleaned from its trajectory, instead of from grid cells. Clearer for users, and it looked much better in the app."
     - "<strong>Autorotation (2021):</strong> improved how maps are automatically aligned, reducing mean rotation error from 3.1° to 1.99°."
   links: []
 
-- title: "sem2umf: robot maps in the cloud"
+- title: "map2json: robot maps in the cloud"
   meta: "iRobot · 2021 · owner and sole developer"
   description: >-
     A C++ translation layer between the maps Roombas build and the format the
@@ -65,9 +65,9 @@
     reach production without waiting for a robot software update, and heavier
     algorithms could run there for robots with limited hardware. In early
     2021 a firmware update left some Roombas acting "drunk". I was on the map
-    remediation team, and we used sem2umf to repair affected maps in the
+    remediation team, and we used map2json to repair affected maps in the
     cloud.
-  figure: sem2umf.svg
+  figure: map2json.svg
   links:
     - label: "BBC News: 'drunk' Roombas after a software update (2021)"
       url: "https://www.bbc.co.uk/news/technology-56239454"

@@ -193,10 +193,84 @@ what the program actually did.
 
 ## Step 2: give it eyes
 
-**[TODO: to write after running step 2.]** Feed back what the program
-actually did, including numbers it can check, and show me the tool output
-too. This is where the main lesson from the ants post should come in: what
-mattered wasn't the code-writing, it was the measuring.
+The third version
+([step2_eyes.py]({{ '/tiny-agent/step2_eyes.py' | relative_url }}))
+has the same three tools and the same loop. Two things changed, and neither
+is clever:
+
+1. Every tool result is printed for me too, so I see what the model sees.
+2. A few lines in the instructions I send with every request (the "system
+   prompt"): back every claim with a check the program prints itself, quote
+   that output in the final answer, and never claim a result you didn't see.
+
+Same task, run again:
+
+```
+you> Write life.py: Conway's Game of Life on a 10x10 grid starting with a
+     glider. Run it and check that the glider moved one cell diagonally
+     after 4 generations.
+
+  [step 1: 742 tokens in, 1058 out, $0.00060, $0.0006 total]
+
+  [tool] write_file {"path": "life.py", "content": "\"\"\"Conway's Game of Life ...
+  | Wrote 1680 characters to life.py
+
+  [tool] run_command {"command": "python3 life.py"}
+
+  run `python3 life.py`? [y/N] y
+  | ... (37 lines hidden)
+  |
+  | Generation 4:
+  | ..........
+  | ..#.......
+  | ...#......
+  | .###......
+  | ..........
+  | (five more empty rows)
+  |
+  | Start cells: [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+  | End cells:   [(1, 2), (2, 3), (3, 1), (3, 2), (3, 3)]
+  | PASS - glider moved one cell diagonally after 4 generations
+
+claude> I wrote `life.py` and ran it. It simulates Conway's Game of Life on
+a 10x10 grid with wrap-around edges, starting from a glider.
+
+The check passed. The program's output includes:
+
+    Start cells: [(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]
+    End cells:   [(1, 2), (2, 3), (3, 1), (3, 2), (3, 3)]
+    PASS - glider moved one cell diagonally after 4 generations
+
+The end cells are the start cells shifted by (+1, +1), so the glider moved
+one cell down and one cell right.
+
+  [step 2: 2194 tokens in, 206 out, $0.00032, $0.0009 total]
+```
+
+Now I don't have to trust the paragraph. I can look at generation 4 myself,
+find the glider one row down and one column right, and read the numbers
+the claim is based on. Same cost as before, less than a tenth of a cent.
+
+Two things I didn't expect:
+
+- **Same question, different program.** This time the grid wraps around at
+  the edges; in step 1 it didn't. I didn't ask for either. The model isn't
+  deterministic, so you can't assume it will make the same choices twice,
+  and if a choice matters, you have to say it.
+- **For the model, almost nothing changed.** It already wrote a check in
+  step 1, and it already read the output. The eyes I added were mostly for
+  *me*. On a task this easy, the first try works and there is nothing to
+  correct.
+
+That second point is the honest one. The Game of Life is a task where the
+answer is well known and the check is obvious: five cells, shifted by one.
+The ants are the opposite. In the first post, the chatbots' code *ran*, and
+the animation *looked* plausible, and it was still wrong in ways that only
+showed up when someone measured: food delivered, with and without trails.
+What made Claude succeed there wasn't writing the code, it was measuring,
+over and over, and believing the numbers over the explanation. And one more
+thing: the agent here writes the code *and* the check. A check is only as
+good as the question it asks. Something to watch in the next test.
 
 ## The test: the ants again
 

@@ -13,6 +13,9 @@ permalink: /projects/
     <h2 class="project-title">{{ p.title }}</h2>
     <p class="project-meta">{{ p.meta }}</p>
     <p>{{ p.description }}</p>
+    {%- if p.figure %}
+    <img class="project-figure" src="{{ '/assets/projects/' | append: p.figure | relative_url }}" alt="{{ p.title }} diagram">
+    {%- endif %}
     {%- if p.links.size > 0 %}
     <ul class="project-links">
       {%- for l in p.links %}

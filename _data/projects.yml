@@ -1,6 +1,23 @@
 # Projects shown on /projects/, newest first.
 # To add a picture: put the file in assets/projects/ and set `image:` to its name.
 
+- title: "sem2umf: robot maps in the cloud"
+  meta: "iRobot · 2021 · owner and sole developer"
+  description: >-
+    A C++ translation layer between the maps Roombas build and the format the
+    iRobot app shows, running in AWS Lambda. It works both ways: robot maps go
+    to the app, and the user's edits in the app (renaming rooms, moving
+    dividers) go back to the robot. Running in the cloud meant fixes could
+    reach production without waiting for a robot software update, and heavier
+    algorithms could run there for robots with limited hardware. In early
+    2021 a firmware update left some Roombas acting "drunk". I was on the map
+    remediation team, and we used sem2umf to repair affected maps in the
+    cloud.
+  figure: sem2umf.svg
+  links:
+    - label: "BBC News: 'drunk' Roombas after a software update (2021)"
+      url: "https://www.bbc.co.uk/news/technology-56239454"
+
 - title: "RoomsSeg: room-by-room cleaning for Roomba"
   meta: "iRobot · 2015 onwards · IROS 2017"
   description: >-

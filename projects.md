@@ -5,11 +5,9 @@ permalink: /projects/
 ---
 
 {% for p in site.data.projects %}
-{%- assign img_path = '/assets/projects/' | append: p.image -%}
-{%- assign img_file = site.static_files | where: "path", img_path | first -%}
 <div class="project">
-  {%- if img_file %}
-  <img class="project-image" src="{{ img_path | relative_url }}" alt="{{ p.title }}">
+  {%- if p.image %}
+  <img class="project-image" src="{{ '/assets/projects/' | append: p.image | relative_url }}" alt="{{ p.title }}">
   {%- endif %}
   <div class="project-body">
     <h2 class="project-title">{{ p.title }}</h2>

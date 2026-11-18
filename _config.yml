@@ -8,5 +8,4 @@ theme: minima
 header_pages:
   - index.md
   - blog.md
-  - about.md
   - contact.md

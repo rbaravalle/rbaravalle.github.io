@@ -3,10 +3,12 @@ layout: default
 title: Home
 ---
 
-# Under construction
+Hi! I'm Rodrigo, a computer scientist based in Winchester, UK.
 
-This site is a work in progress.
+I spent the last several years at iRobot, where I led a team working on visual SLAM, perception and machine learning for home robots. Before that I did a PhD in computer graphics and a postdoc, and worked in several countries before moving to the UK in 2019.
 
-Check back soon.
+I'm also co-founder of [The Logic & Language Studio](https://thelogiclanguagestudio.setmore.com), where I teach maths and computer science.
 
-In the meantime, you can find me on [Linkedin](https://www.linkedin.com/in/rodrigo-baravalle/).
+I use this site to write about the projects I'm working on. The latest is [Emergent behavior and agentic magic programming]({% post_url 2026-11-16-ants-and-agents %}).
+
+I'm currently open to remote software engineering and tech lead roles. Find me on [LinkedIn](https://www.linkedin.com/in/rodrigo-baravalle/) or [GitHub](https://github.com/rbaravalle).

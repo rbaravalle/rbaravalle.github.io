@@ -29,10 +29,39 @@ a:hover {
 
 pre,
 code,
-.highlight {
+.highlight,
+.highlighter-rouge .highlight {   // minima sets a light #eef here
   background-color: #11141b;
   color: $text-color;
   border-color: $grey-color-light;
+}
+
+// Code inside a block: no per-line background (it made dark stripes on the
+// block), no border.
+pre code {
+  background-color: transparent;
+  border: 0;
+}
+
+// Syntax colours: minima's are for a light background (navy, dark red,
+// teal...). These are readable on the dark one.
+.highlight {
+  .c, .c1, .cm, .cs, .cp, .cd { color: #7f8aa0; font-style: italic; } // comments
+  .k, .kc, .kd, .kn, .kp, .kr, .ow { color: #c792ea; }                 // keywords
+  .kt, .nc, .nn                   { color: #82aaff; }                  // types, classes
+  .s, .sb, .sc, .sd, .s1, .s2, .se, .sh, .si, .sx, .ss, .sr, .sa
+                                  { color: #c3e88d; }                  // strings
+  .m, .mf, .mh, .mi, .mo, .il, .mb { color: #f78c6c; }                 // numbers
+  .nb, .bp                        { color: #82aaff; }                  // builtins
+  .nf, .fm                        { color: #82aaff; }                  // functions
+  .na, .nt, .no, .nv, .vc, .vg, .vi, .ni, .nl, .nd
+                                  { color: #ffcb6b; }                  // names, attributes
+  .ne                             { color: #ff5370; }                  // exceptions
+  .o, .p                          { color: $text-color; }              // operators, punctuation
+  .err { color: #ff5370; background-color: transparent; }
+  .gd  { color: #ff5370; background-color: rgba(255, 83, 112, 0.12); }
+  .gi  { color: #c3e88d; background-color: rgba(195, 232, 141, 0.12); }
+  .w   { color: $grey-color; }
 }
 
 blockquote {

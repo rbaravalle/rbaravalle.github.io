@@ -659,7 +659,77 @@ loophole, and asked for the comparison that mattered. The agent did the
 searching; the judgment about what counts as success was mine. Claude, in
 the first post, did both, from one short prompt.
 
-**[TODO: optional, the same last prompt on Opus.]**
+But that comparison is unfair in two ways at once: a different model
+(Haiku, the smallest, against Opus) *and* a different harness (my twenty
+lines against Claude Code). So, one last run.
+
+### The fair comparison: same twenty lines, bigger model
+
+Same `step3_vision.py`, the no-compass prompt from before, no hints, no
+coaching. Only `--model opus`
+([transcript]({{ '/tiny-agent/runs/step3_opus_ants/transcript.txt' | relative_url }}),
+[code]({{ '/tiny-agent/runs/step3_opus_ants/ants.py' | relative_url }})).
+
+Nine round trips, **54 cents**, and it never asked me anything. Opus costs
+about forty times more per token than Haiku, but it needed a quarter of the
+steps and none of my help. Its first draft already had the rule Haiku found
+only after I closed the loophole: deposits fade with the time since the ant
+left the nest or the food. It also gave each ant three short "smell"
+sensors (left, front, right), like Claude's version in the first post, and,
+without being asked, made the world harder: two nests, three food piles
+that run out.
+
+Two problems came up, and how it found them is the interesting part. The
+first: its first check passed ("PASS: delivery rate increased"), and then
+it looked at the picture:
+
+> In the first version, every ant joined a single trail and two of the food
+> piles were never used, even though the "rate increased" test passed. I
+> only noticed this by looking at the image.
+
+The picture caught what the numbers missed: step 3's eyes, doing exactly
+their job. The second: once a pile was empty, ants kept following its dead
+trail forever, and deliveries dropped to zero. Its fix was a minimum smell:
+below it, an ant ignores the pheromone and wanders. That's one of the three
+rule changes Claude needed in the first post ("ignore very weak
+pheromone"). And because the food runs out, it saved snapshots over time
+instead of a last frame with nothing left to see:
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-opus-ants.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Five snapshots and a bar chart. Each snapshot shows one bright, narrow, curved trail with ants on it between a red nest and a yellow food pile; as each pile runs out, the trail fades and a new one forms to another pile. The bar chart of deliveries per 500 steps rises and falls in three waves.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Opus with my twenty lines. Red: nests, yellow: food (dim when eaten),
+    green and blue: the two trails. Each pile gets its own trail, and when
+    it runs out, the colony moves on. Bottom right: food delivered over
+    time, in waves.
+  </figcaption>
+</figure>
+
+Curved trails, one per food pile, a colony that moves on when the food runs
+out. It didn't build a comparison with the trails switched off (I hadn't
+asked this time), so I did, three seeds each
+([script]({{ '/tiny-agent/runs/step3_opus_ants/check_variants.py' | relative_url }})):
+
+| | food delivered (of 9,000) |
+|---|---|
+| Opus's version | 8,997 / 8,996 / 9,000: every pile emptied, every seed |
+| ants carrying food ignore the home trail | about 2,430 |
+| searching ants ignore the food trail | about 3,020 |
+| deposits don't fade | 9 / 22 / 1,375 |
+| no minimum smell | about 3,100: first pile emptied, then stuck |
+
+Every rule does real work, both trails are needed, and nothing points the
+way home. And unlike Haiku's best-of-eight picture, this one holds on every
+seed.
+
+So, back to the question: was it the model or the harness? With the same
+twenty lines, Opus did on its own what Haiku needed me for: it avoided the
+compass, found the fading rule, caught a problem by looking, and fixed the
+dead-trail trap. The harness had to be good enough (whole output, eyes);
+without the image, the one-trail problem would have passed. But the
+judgment, knowing what counts as success, came from the model.
 
 ## What the real ones add
 

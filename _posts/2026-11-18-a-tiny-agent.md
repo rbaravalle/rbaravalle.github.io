@@ -733,28 +733,101 @@ judgment, knowing what counts as success, came from the model.
 
 ## What the real ones add
 
-**[TODO]** The problems the tiny agent runs into, found by hitting them.
-So far:
-- Cut output with nothing saying it was cut (the "Run A:" mystery).
-- Clumsy edits: it only has "overwrite the whole file", so it edited
-  `ants.py` with long `sed` one-liners and inline Python scripts, and broke
-  it once (a constant used before it was defined).
-- Re-sent conversation: the input grew from 793 to 28,008 tokens in 13 steps.
-- Typing `y` dozens of times. Permissions are a real design problem.
-- The "sandbox" is just a folder: in the no-compass run the agent wrote
-  scripts to `/tmp`, tried `cd /root`, and later deleted its scratch files in `/tmp`. My `y/N`
-  was the only guard, and after a while you stop reading.
-- Its parameter sweeps took up to 4.5 minutes, close to my 5-minute limit
-  per command. One went over and was killed; the agent then ran its sweeps
-  in the background and polled them with `sleep`, outside anything my loop
-  tracks. Real agents have proper background jobs.
-- It stopped after six steps and needed a nudge to keep going.
+I didn't plan this section. I listed the problems as the tiny agent ran
+into them, and every one of them is something a product like Claude Code
+has an answer for. That's the best explanation I have found of what those
+products are: the loop, plus years of answers to these problems.
 
-These are the things products like Claude Code solve.
+**Cut output.** My twenty lines kept the last 4,000 characters of every
+command, silently, and the agent spent three steps investigating a program
+that was fine. Real agents trim long output too (they have to), but they
+say what they cut, and let the agent ask for the rest.
+
+**Clumsy edits.** My agent can only overwrite a whole file. So to change one
+number it either rewrote everything or improvised: long `sed` one-liners,
+little Python scripts that search and replace inside `ants.py`. It broke the
+file twice that way (a constant used before it was defined, a grid used
+before it existed) and once left a "placeholder" line behind. Real agents
+have an edit tool: replace exactly this text with that text, and fail
+loudly if the text isn't there.
+
+**A growing conversation.** Remember step 0: nothing is remembered,
+everything is re-sent. In the last Haiku session the input grew from under
+a thousand tokens to 55,000 per step. On Haiku that's still cheap, but it
+grows with every step, and a long enough task eventually doesn't fit.
+Real agents keep a re-sent prefix cheap with caching, and summarize or
+clear old parts of the conversation when it gets long.
+
+**Permissions.** I typed `y` more than fifty times. After the first
+twenty, I wasn't really reading. My "safety" was a prompt I approved
+without looking, which is barely safety at all. Real agents let you allow
+whole kinds of commands (run the tests, yes; delete things, ask me) and can
+run inside a real sandbox.
+
+**A folder is not a sandbox.** I ran everything in a throwaway folder, and
+the agent simply left it: it wrote scripts to `/tmp`, tried `cd /root`, and
+later deleted its files there. Nothing in my code stops that. It was
+harmless here, and it's exactly why an agent that runs commands belongs
+in a container or a cloud session, not on your own machine.
+
+**Time.** A single command can take minutes. One of its parameter sweeps
+went over my five-minute limit and was killed. The agent's answer was
+clever: it started the next one in the background with `nohup` and checked
+on it with `sleep 240`. But now there was a process running that my loop
+knew nothing about. Real agents have background jobs they can start, watch
+and stop.
+
+**Stopping.** The no-compass run stopped after six steps with "the result
+is only partly what you asked for" and needed me to say "go on". Opus,
+on the same harness, never stopped early. Part of that is the model, part
+is instructions: a real agent's system prompt is long, and much of it is
+about exactly this, when to keep going, when to check, when to ask.
+
+**And the one my twenty lines can't fix: judgment.** Haiku's checks kept
+answering easier questions than mine: a compass, then a compass called
+"smell". The harness made it *possible* to notice (seeing the whole output,
+seeing the image), but noticing took either me or a bigger model.
 
 ## What I take away
 
-**[TODO]**
+I wanted to open Conrad, and inside there is a loop. Send the model the
+task and a list of tools; run whatever it asks for; send back what
+happened; repeat. My final version is about 200 lines, most of them tool
+descriptions and printing. The loop itself is twenty. The first time it
+wrote a file and ran it without me, it felt like magic again, and now I
+know exactly how small the trick is.
 
-Also this time, Claude did the first draft of the post and I iterated. And
-the tiny agent is a hundred lines.
+But the loop alone was not what made the ants work. Each step taught me
+something the first post had already hinted at:
+
+- **Hands** let it act. But in step 1 I was trusting a friendly paragraph.
+- **Eyes** let me check. In step 2 everything it said was true, and the
+  picture still had no paths: a check is only as good as the question it
+  asks.
+- **Real eyes** let it check itself. In step 3, it looked at its own image
+  and changed its mind. Opus caught a problem that way that all its numbers
+  had missed.
+
+And then the surprise I didn't expect: when it can't see what you want, an
+agent does what you *said*. "Only smell" got me a smell that points home.
+Every shortcut it took was honest and, in fairness, flagged in its own
+caveats. It followed the letter of my request, every time. Writing the
+request, and the check, turned out to be the hard part. When I named the
+loophole and asked for the right comparison, even the smallest model found
+the real rule.
+
+So where does the magic come from? The ants and the agent are the same
+story. A single ant follows a few rules in a loop; the trails come from
+the feedback, the pheromone that tells the next ant what happened. A single
+call to the model just writes text; the agent comes from the feedback, the
+tool results that tell the next call what happened. In both cases a bad
+signal (traffic instead of information, a check that measures the wrong
+thing) leads the whole loop astray. And in both cases, when the signal is
+right, something capable comes out.
+
+All of it, five ant runs, two models, cost me less than a dollar of the 10
+USD I put in. I still don't have the million dollars, but I now know what
+I would be asking, and what I would have to check.
+
+Also this time, Claude did the first draft of the post and I iterated.
+This time I know what was inside the box while it did.

@@ -36,9 +36,9 @@ at. All the code is in
 
 **It costs money, a little.** Calling the model from your own code is billed
 per use, separately from the monthly subscription I used for the ants. I invested
-10 USD (+2 of tax) of credits in the account (a spending limit is worth setting too: a
+10 USD of credits (plus 2 of tax) in the account (a spending limit is worth setting too: a
 loop that goes wrong keeps calling the model on its own). I started using the
-small, cheap model: Claude Haiku 5.5, and every script prints what each
+small, cheap model, Claude Haiku 5.5, and every script prints what each
 call costs.
 
 **It can break things.** An agent that runs commands can run *any* command,
@@ -71,7 +71,7 @@ list the script keeps and re-sends.
 
 Ask this chatbot to build something and it can only tell you how to do it.
 You need to run it yourself, then paste back the errors. You are the loop, exactly like my
-  ChatGPT and Gemini rounds in the ants post.
+ChatGPT and Gemini rounds in the ants post.
 
 ## Step 1: give it hands
 
@@ -133,7 +133,7 @@ for step in range(MAX_STEPS):
 and run the command. `MAX_STEPS` is a brake, so a confused loop stops on its
 own.
 
-This looks incredibly simple, a for loop where the model decides if it needs a tool and when to stop!.
+This looks incredibly simple: a for loop where the model decides whether it needs a tool and when to stop!
 Let's try a first task: Conway's Game of Life, another classic of emergence,
 starting from a *glider*, five cells that walk one cell diagonally every
 four generations. Easy to check:
@@ -228,7 +228,7 @@ CHECK trail concentrated (>0.15):         PASS
 CHECK throughput rising over time:        PASS
 ```
 
-Three PASS lines!. Here is the image it saved:
+Three PASS lines! Here is the image it saved:
 
 <figure style="margin: 1.5em 0;">
   <img src="{{ '/assets/tiny-agent/img/step2-haiku-ants.png' | relative_url }}"
@@ -247,7 +247,7 @@ comparison with pheromones switched off, the test nobody did for the Gemini
 version. From the numbers it found real bugs (searching ants following their
 *own* trail; smell values growing without limit) and fixed them.
 
-**The confusing part was the not the model, but the script fault.** Halfway through it said "the output
+**The confusing part wasn't the model's fault, but the script's.** Halfway through it said "the output
 doesn't match the script I wrote", checked the file (fine), ran it again,
 and gave up on the mystery. The cause was in my twenty lines: to keep the
 conversation short, `run_tool` sent back only the last 4,000 characters of

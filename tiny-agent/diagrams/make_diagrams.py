@@ -127,9 +127,8 @@ def diagram(step):
 
     # cards
     parts.append(task())
-    brain_sub = {None: "reads, decides, asks", 0: "can only talk", 1: "asks for tools",
-                 2: "told to measure", 3: "told to look"}[step]
-    parts.append(card(290, 20, 178, 130, BRAIN, "the model", brain_sub, 42, new=step in (2, 3)))
+    # The model (the brain) is the same in every step; only hands and eyes change.
+    parts.append(card(290, 20, 178, 130, BRAIN, "the model", "reads, decides, asks", 42))
     parts.append(done())
     if step == 0:
         parts.append(card(551, 196, 178, 120, person(ORANGE), "you run it", "copy · paste · run", 34, border=ORANGE))
@@ -140,7 +139,7 @@ def diagram(step):
             parts.append(card(290, 345, 178, 120, eye_and_picture(), "the results", "whole output · images", 38, new=True))
         else:
             sub = "output · errors" if step in (1, 2) else "output · errors · images"
-            parts.append(card(290, 345, 178, 120, EYE, "the results", sub, 38))
+            parts.append(card(290, 345, 178, 120, EYE, "the results", sub, 38, new=step == 2))
     return "\n  ".join(parts)
 
 META = {

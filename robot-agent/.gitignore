@@ -1,0 +1,6 @@
+__pycache__/
+.pytest_cache/
+runs/*/bundle.zip
+runs/*/bundle.zip.tmp
+runs/fake-*/
+runs/smoke/

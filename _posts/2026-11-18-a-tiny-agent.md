@@ -13,22 +13,16 @@ Here we can.
 The surprise, at least for me, is how small the core is. A coding agent is
 mostly a loop:
 
-```
-          ┌─────────────────────────────────────────────┐
-          │                                             │
-  task ──►│  1. send the model: the task + a list of    │
-          │     tools it may ask for                    │
-          │                                             │
-          │  2. the model answers either                │
-          │       "here is my answer"   ──────────────► done
-          │     or                                      │
-          │       "please run tool X with inputs Y"     │
-          │                                             │
-          │  3. my code runs the tool and sends back    │
-          │     the result ─────────────────┐           │
-          │                                 │           │
-          └─────────────── repeat ◄─────────┘───────────┘
-```
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/agent-loop.svg' | relative_url }}"
+       style="width: 100%;"
+       alt="The agent loop. Your task goes to the model, drawn as a brain. The model either answers ('here is my answer') and is done, or asks 'please run tool X with Y'. The tools, drawn as a hand, read, write and run things. What happened, the results, drawn as an eye, is sent back to the model, and the loop repeats.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    The model is the brain, but it can't touch anything: it can only ask. My
+    code is the hands (it runs the tools) and the eyes (it sends back what
+    happened). Then it all repeats.
+  </figcaption>
+</figure>
 
 The rest of this post builds it in small steps, the same way the ants post
 went: something that doesn't work, then something that does, and then

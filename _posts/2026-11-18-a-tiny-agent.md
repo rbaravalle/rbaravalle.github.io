@@ -10,8 +10,7 @@ at it on my own for a decade. I closed that post with a promise: find out how
 an agent like that works inside. In the book, you never get to open Conrad.
 Here we can.
 
-The surprise, at least for me, is how small the core is. A coding agent is
-mostly a loop:
+The core is small. A coding agent is mostly a loop:
 
 <figure style="margin: 1.5em 0;">
   <img src="{{ '/assets/tiny-agent/img/agent-loop.svg' | relative_url }}"
@@ -36,10 +35,10 @@ at. All the code is in
 [the repository](https://github.com/rbaravalle/rbaravalle.github.io/tree/main/tiny-agent).
 
 **It costs money, a little.** Calling the model from your own code is billed
-per use, separately from the monthly subscription I used for the ants. I put
-10 USD of credits in the account (a spending limit is worth setting too: a
-loop that goes wrong keeps calling the model on its own). I mostly used the
-smallest, cheapest model, Claude Haiku 5.5, and every script prints what each
+per use, separately from the monthly subscription I used for the ants. I invested
+10 USD (+2 of tax) of credits in the account (a spending limit is worth setting too: a
+loop that goes wrong keeps calling the model on its own). I started using the
+small, cheap model: Claude Haiku 5.5, and every script prints what each
 call costs.
 
 **It can break things.** An agent that runs commands can run *any* command,
@@ -57,14 +56,13 @@ you> Hello
 claude> Hello! How can I help you with your code today?
 ```
 
-One thing I didn't know: the model remembers nothing between calls. My
-script sends the *whole* conversation again every time, and you can watch the
+The model remembers nothing between calls. The script sends the *whole* conversation again every time, and you can watch the
 token count (and the cost) grow with each turn. The "memory" of a chat is a
-list my script keeps and re-sends.
+list the script keeps and re-sends.
 
-Ask this chatbot to build something and it can only tell you what to type.
-You run it, you paste back the errors. You are the loop, exactly like my
-ChatGPT and Gemini rounds in the ants post.
+Ask this chatbot to build something and it can only tell you how to do it.
+You need to run it yourself, then paste back the errors. You are the loop, exactly like my
+  ChatGPT and Gemini rounds in the ants post.
 
 ## Step 1: give it hands
 
@@ -117,7 +115,8 @@ for step in range(MAX_STEPS):
 and run the command. `MAX_STEPS` is a brake, so a confused loop stops on its
 own.
 
-A small first task: Conway's Game of Life, another classic of emergence,
+This looks incredibly simple, a for loop where the model decides if it needs a tool and when to stop!.
+Let's try a first task: Conway's Game of Life, another classic of emergence,
 starting from a *glider*, five cells that walk one cell diagonally every
 four generations. Easy to check:
 
@@ -138,8 +137,7 @@ by one row down and one column right.
   [step 2: 2407 tokens in, 100 out, $0.00029, $0.0009 total]
 ```
 
-The first time it ran a program it had just written, without me typing
-anything but `y`, was a small "aha" moment. Conrad has hands! Two round
+The magic starts, without me typing anything but `y`. Conrad has hands! Two round
 trips, less than a tenth of a cent. Notice the input jumping from 633 to
 2,407 tokens: the program and its output are now part of the conversation
 that gets re-sent every step. On a long task that will matter.
@@ -152,7 +150,7 @@ line, and the model read all of it. I never saw it. All I got was a friendly
 paragraph saying the check passed.
 
 That's exactly where the ants post went wrong with the chatbots: a confident
-explanation, and nobody measuring. This time it was true (I ran
+explanation, and no checks. This time it was true (I ran
 [the program it wrote]({{ '/tiny-agent/runs/step1_life.py' | relative_url }})
 myself), but I had to go and check.
 
@@ -160,7 +158,7 @@ myself), but I had to go and check.
 
 The third version
 ([step2_eyes.py]({{ '/tiny-agent/step2_eyes.py' | relative_url }}))
-changes two things, neither of them clever:
+changes two things:
 
 1. Every tool result is printed for me too, so I see what the model sees.
 2. A few lines in the instructions sent with every request (the "system
@@ -171,16 +169,16 @@ Same task again, and now I see the glider in generation 4 myself, plus the
 `Start cells` / `End cells` lines the claim is based on. Two small
 surprises. This time the grid wraps around at the edges, and in step 1 it
 didn't; I asked for neither. The model isn't deterministic: if a choice
-matters, you have to say it. And for the model, almost nothing changed: it
+matters, you have to state it. And for the model, almost nothing changed: it
 already wrote a check and read the output. The eyes were for *me*.
 
-The Game of Life is too easy to tell us much: the answer is well known and
+The Game of Life is "too easy" to tell us much: the answer is well known and
 the check is obvious. The ants are the opposite. In the first post, the
 chatbots' code ran and looked plausible, and it was still wrong in ways
 that only showed up when someone measured. And the agent writes the code
 *and* the check. A check is only as good as the question it asks.
 
-## The test: the ants again
+## Now try the ants again
 
 I gave the tiny agent (step 2, Haiku) the same short request I gave Claude
 in the first post, plus one sentence, because it can't see a screen:
@@ -203,7 +201,7 @@ CHECK trail concentrated (>0.15):         PASS
 CHECK throughput rising over time:        PASS
 ```
 
-Three PASS lines. Here is the image it saved:
+Three PASS lines!. Here is the image it saved:
 
 <figure style="margin: 1.5em 0;">
   <img src="{{ '/assets/tiny-agent/img/step2-haiku-ants.png' | relative_url }}"
@@ -222,7 +220,7 @@ comparison with pheromones switched off, the test nobody did for the Gemini
 version. From the numbers it found real bugs (searching ants following their
 *own* trail; smell values growing without limit) and fixed them.
 
-**The confusing part was my fault.** Halfway through it said "the output
+**The confusing part was the not the model, but the script fault.** Halfway through it said "the output
 doesn't match the script I wrote", checked the file (fine), ran it again,
 and gave up on the mystery. The cause was in my twenty lines: to keep the
 conversation short, `run_tool` sent back only the last 4,000 characters of
@@ -239,9 +237,8 @@ measures nothing.
 
 And every ant dropped the same amount of pheromone on every step, however
 long ago it left the nest or the food. That's my 2016 mistake: the map
-records *traffic*, not *information*. Every number it gave me was real, and
-it said "I couldn't view ants.png". It graded its own homework with
-questions it wrote itself, and it couldn't see the drawing.
+records *traffic*, not *information*. Every number it gave me was real, but it still
+couldn't see the drawing.
 
 ## Step 3: real eyes
 

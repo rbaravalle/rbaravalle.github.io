@@ -1,7 +1,6 @@
 ---
 title: "What's inside Conrad? Building a tiny coding agent"
 date: 2026-11-18
-published: false   # DRAFT: remove this line to publish
 ---
 
 In the [last post]({% post_url 2026-11-16-ants-and-agents %}) I watched an AI

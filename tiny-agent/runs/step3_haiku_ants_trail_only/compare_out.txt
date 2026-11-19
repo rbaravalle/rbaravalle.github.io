@@ -1,0 +1,13 @@
+condition seed delivered  last3000  mean trip
+trail        1     12157      3254      112.8
+trail        2      2557      1692      341.9
+trail        3      4618       255      250.6
+trail        4      3552      2036      288.5
+ignore       1      1253       332     1509.8
+ignore       2      1243       322     1490.3
+ignore       3      1227       333     1540.6
+ignore       4      1254       336     1505.1
+
+mean delivered: trail 5721  ignore 1244
+mean trip steps: trail 248.4  ignore 1511.5
+PASS: the home trail is what brings ants home

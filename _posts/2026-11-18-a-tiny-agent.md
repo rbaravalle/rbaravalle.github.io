@@ -556,7 +556,110 @@ time, and still not the harder half: ants finding their way home by a trail
 other ants lay, the thing Claude's version did and the tiny agent avoided
 three times.
 
-**[TODO: same prompt on Opus for the fair comparison with Claude.]**
+### Closing the loophole
+
+So I did what a manager would do: I told it what was wrong, in the same
+window, so it still had the whole conversation in front of it.
+
+> The nest gradient is a compass in disguise: a smell covering the whole map
+> that points to the nest from everywhere. Remove it. The nest and the food
+> must not emit any smell; the only information ants have is pheromone that
+> ants themselves lay down. Ants carrying food must find their way home
+> using a trail other ants left. Show me, with a comparison where ants
+> ignore that trail, that the trail is what brings them home.
+
+I named the problem, not the fix. And the last sentence asks for the
+measurement I had been doing by hand after each run.
+
+It removed the gradient, wrote the comparison as its own script, and ran
+both. The first attempt failed badly: one seed delivered 16 pieces of food
+and then froze. And then it wrote this:
+
+> Empty ants lay the home trail even after wandering far from the nest,
+> which is what creates loops. I'll make deposit strength fall off with
+> time since the ant last left the nest or food, so each trail is strongest
+> near its source.
+
+That's the rule. The one from the first post ("ants lay less pheromone the
+longer it has been since they left the nest or the food"), the one my 2016
+version was missing, and the one it had walked around three times. Nobody
+told it. Once the easy ways out were closed, it found it.
+
+Two more things happened on the way. A parameter sweep hit my five-minute
+limit per command and was killed. So the agent started the next one *in
+the background* (`nohup ... &`) and checked on it with `sleep 240; cat
+tau_out.txt`, over several steps. It worked around my harness. And my
+twenty lines now had a process running that they knew nothing about.
+
+The comparison it wrote ended with `PASS: the home trail is what brings ants
+home`: a trip home takes about 250 steps with the trail and 1,500 without.
+And the picture:
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-haiku-trail-only-seed1.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Food trail after 12,000 steps, 12,157 deliveries: a single thin trail winding from the nest on the left to the food on the right, with a small loop near each end, and ants lined up along it.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    No compass, no smell from the nest or the food: a single winding trail,
+    with the ants lined up on it. Seed 1.
+  </figcaption>
+</figure>
+
+A trail. Thin, winding, not the straight line a compass draws: it looks
+like something ants made. About **14 cents** for the whole session, 39
+round trips.
+
+I still ran my own check
+([script]({{ '/tiny-agent/runs/step3_haiku_ants_trail_only/check_variants.py' | relative_url }})):
+
+| | delivered | trip home (steps) |
+|---|---|---|
+| the agent's version, 8 seeds | 2,557 to 12,157 (average 5,696) | 113 to 396 |
+| deposits don't fade | 0, 19, 970, 5,132 | 132 to 207 |
+| ants with food ignore the home trail | about 1,245 | about 1,510 |
+| empty ants ignore the food trail | about 1,230 | about 555 |
+
+Ignore either trail, and the colony drops to about 1,240: what ants get by
+wandering. Everything above that comes from the trails, both of them, and
+nothing else. Take away the fading, and three runs out of four stop
+delivering altogether. This one is emergent.
+
+But that picture is seed 1, the best of eight. Here are two others:
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-haiku-trail-only-seed2.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Seed 2, 2,557 deliveries: two long winding trails between the nest and the food, one looping far up toward the top of the map and one far down to the bottom edge.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Seed 2: the trail locked into two long detours and never straightened.
+  </figcaption>
+</figure>
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-haiku-trail-only-seed3.png' | relative_url }}"
+       style="border-radius: 4px;"
+       alt="Seed 3, 4,618 deliveries: a winding trail from the nest that ends near the food, with closed loops of ants circling beside the food patch and another loop higher up.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Seed 3: closed loops of ants circling right next to the food. In the
+    last 3,000 steps, deliveries dropped to a trickle.
+  </figcaption>
+</figure>
+
+Seed 3 is an [ant mill](https://en.wikipedia.org/wiki/Ant_mill) again, the
+same failure Claude ran into in the first post: ants following ants in a
+circle, food right next to them. Claude needed three more rule changes to get out of
+it (ignore very faint smells, give up after a while, and cap how much one
+ant can reinforce a trail). The tiny agent stopped at the fading rule. In fairness, it said
+so: "Results vary a lot by seed... Trails can lock in and trap ants."
+
+So, does the tiny agent pass the exam? With a lot of help, partly. Twenty
+lines of loop, a cheap model and 14 cents got the real mechanism, measured
+properly. But look at what *I* did: I noticed the compass, named the
+loophole, and asked for the comparison that mattered. The agent did the
+searching; the judgment about what counts as success was mine. Claude, in
+the first post, did both, from one short prompt.
+
+**[TODO: optional, the same last prompt on Opus.]**
 
 ## What the real ones add
 
@@ -572,7 +675,9 @@ So far:
   scripts to `/tmp`, tried `cd /root`, and later deleted its scratch files in `/tmp`. My `y/N`
   was the only guard, and after a while you stop reading.
 - Its parameter sweeps took up to 4.5 minutes, close to my 5-minute limit
-  per command.
+  per command. One went over and was killed; the agent then ran its sweeps
+  in the background and polled them with `sleep`, outside anything my loop
+  tracks. Real agents have proper background jobs.
 - It stopped after six steps and needed a nudge to keep going.
 
 These are the things products like Claude Code solve.

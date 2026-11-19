@@ -47,6 +47,15 @@ code asks me before every command. Never in your home directory.
 
 ## Step 0: a chatbot
 
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step0-chatbot.svg' | relative_url }}"
+       style="width: 100%;"
+       alt="Step 0. The model can only talk: it says 'type this code'. You run it, read the output and errors, and paste them back. The hands and eyes are you, drawn in orange.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Step 0: the model can only talk. The hands and the eyes are mine: I run the code and paste back what happened.
+  </figcaption>
+</figure>
+
 The first version can only talk
 ([step0_chat.py]({{ '/tiny-agent/step0_chat.py' | relative_url }})):
 
@@ -65,6 +74,15 @@ You need to run it yourself, then paste back the errors. You are the loop, exact
   ChatGPT and Gemini rounds in the ants post.
 
 ## Step 1: give it hands
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step1-hands.svg' | relative_url }}"
+       style="width: 100%;"
+       alt="Step 1. New: the tools, a hand that reads, writes and runs. Results go back to the model, but all I see is the model's final paragraph.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Step 1: my code runs the tools for the model. The loop no longer needs me, but I only see its final paragraph.
+  </figcaption>
+</figure>
 
 The second version
 ([step1_tools.py]({{ '/tiny-agent/step1_tools.py' | relative_url }}))
@@ -156,6 +174,15 @@ myself), but I had to go and check.
 
 ## Step 2: give it eyes
 
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step2-eyes.svg' | relative_url }}"
+       style="width: 100%;"
+       alt="Step 2. New: every result is also printed for me, and the model is told to measure, backing every claim with output it saw.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Step 2: what happened is printed for me too, and the model is told to measure.
+  </figcaption>
+</figure>
+
 The third version
 ([step2_eyes.py]({{ '/tiny-agent/step2_eyes.py' | relative_url }}))
 changes two things:
@@ -241,6 +268,15 @@ records *traffic*, not *information*. Every number it gave me was real, but it s
 couldn't see the drawing.
 
 ## Step 3: real eyes
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/tiny-agent/img/step3-real-eyes.svg' | relative_url }}"
+       style="width: 100%;"
+       alt="Step 3. New: the results include the whole output and images the model can look at, and the model is told to look.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Step 3: the model sees the whole output and can look at the images it saved.
+  </figcaption>
+</figure>
 
 Two small fixes
 ([step3_vision.py]({{ '/tiny-agent/step3_vision.py' | relative_url }})):

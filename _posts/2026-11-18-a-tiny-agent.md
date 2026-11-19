@@ -502,6 +502,26 @@ its own what Haiku needed me for. The harness had to be good enough:
 without the image, the one-trail problem would have passed. But the
 judgment, knowing what counts as success, came from the model.
 
+### Cost against power
+
+All the ant runs side by side, plus Claude Code from the first post. A
+"round trip" is one call to the model; `y` is me approving a command.
+
+| run | model | round trips | time (approx.) | what I had to do | cost | result |
+|---|---|---|---|---|---|---|
+| step 2 | Haiku 5.5 | 13 | 5 min | 1 prompt, 11 × `y` | $0.03 | clouds, no paths |
+| step 3 | Haiku 5.5 | 12 | 10 min | 1 prompt, 8 × `y` | $0.02 | a straight path, drawn by a compass |
+| step 3, no compass | Haiku 5.5 | 25 | 20 min | 2 prompts ("go on"), 17 × `y` | $0.06 | a corridor, drawn by a hidden compass |
+| … plus closing the loophole | Haiku 5.5 | +14 | +25 min | +1 prompt naming the problem, +10 × `y` | +$0.08 | real trails, but only on some seeds |
+| step 3, no compass | Opus 5.5 | 9 | 5 min | 1 prompt, 6 × `y` | $0.54 | real trails, on every seed |
+| first post: Claude Code | Opus 5.5 | not counted (it ran about 150 simulations) | 30 min | 2 short prompts | monthly subscription | the ants at the top of the first post |
+
+Haiku is about forty times cheaper per token, and it got there for 14
+cents, but only after about 45 minutes of my time, three prompts and me spotting
+what was wrong. Opus cost four times more in total and needed nothing but
+the first prompt. My time was the expensive part. And Claude Code did the
+whole job, including the judgment, from one short request.
+
 ## What the real ones add
 
 I didn't plan this section. I listed the problems as the tiny agent hit

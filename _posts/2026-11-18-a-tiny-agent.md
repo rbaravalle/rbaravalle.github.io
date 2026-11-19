@@ -23,22 +23,15 @@ The core is small. A coding agent is mostly a loop:
   </figcaption>
 </figure>
 
-The rest of this post builds it in small steps, the same way the ants post
-went: something that doesn't work, then something that does, and then
-finding where it breaks.
-
 ## The setup
 
 No frameworks: plain Python and the model provider's own library, talking to
-the API directly. Frameworks exist to hide exactly the part I want to look
-at. All the code is in
+the API directly. All the code is in
 [the repository](https://github.com/rbaravalle/rbaravalle.github.io/tree/main/tiny-agent).
 
 **It costs money, a little.** Calling the model from your own code is billed
 per use, separately from the monthly subscription I used for the ants. I invested
-10 USD of credits (plus 2 of tax) in the account (a spending limit is worth setting too: a
-loop that goes wrong keeps calling the model on its own). I started using the
-small, cheap model, Claude Haiku 5.5, and every script prints what each
+10 USD of credits (plus 2 of tax) in the account (a spending limit is worth setting too just in case). I started using a small, cheap model - Claude Haiku 5.5 - and every script prints what each
 call costs.
 
 **It can break things.** An agent that runs commands can run *any* command,
@@ -134,7 +127,9 @@ and run the command. `MAX_STEPS` is a brake, so a confused loop stops on its
 own.
 
 This looks incredibly simple: a for loop where the model decides whether it needs a tool and when to stop!
-Let's try a first task: Conway's Game of Life, another classic of emergence,
+
+Let's try a first task: in the book, you ask Conrad about playing video games and it mentions that you could instead be doing something far more interesting like having a sports car. So far, agents just follow your instructions.
+Let's go with Conway's Game of Life, another classic of emergence,
 starting from a *glider*, five cells that walk one cell diagonally every
 four generations. Easy to check:
 
@@ -160,9 +155,9 @@ trips, less than a tenth of a cent. Notice the input jumping from 633 to
 2,407 tokens: the program and its output are now part of the conversation
 that gets re-sent every step. On a long task that will matter.
 
-### Who was watching?
+### It says it worked
 
-Then I realized something. My script printed the name of each tool call,
+My script printed the name of each tool call,
 but not what came back. The program printed its grids and a `CHECK PASSED`
 line, and the model read all of it. I never saw it. All I got was a friendly
 paragraph saying the check passed.
@@ -183,7 +178,7 @@ myself), but I had to go and check.
   </figcaption>
 </figure>
 
-The third version
+But I need more to be confident. The third version
 ([step2_eyes.py]({{ '/tiny-agent/step2_eyes.py' | relative_url }}))
 changes two things:
 
@@ -502,7 +497,7 @@ its own what Haiku needed me for. The harness had to be good enough:
 without the image, the one-trail problem would have passed. But the
 judgment, knowing what counts as success, came from the model.
 
-### Cost against power
+### Summary
 
 All the ant runs side by side, plus Claude Code from the first post. A
 "round trip" is one call to the model; `y` is me approving a command.
@@ -522,12 +517,11 @@ what was wrong. Opus cost four times more in total and needed nothing but
 the first prompt. My time was the expensive part. And Claude Code did the
 whole job, including the judgment, from one short request.
 
-## What the real ones add
+## How are production agents different from my script
 
-I didn't plan this section. I listed the problems as the tiny agent hit
-them, and each one is something a product like Claude Code has an answer
-for. That's the best description I have of those products: the loop, plus
-answers to these problems.
+I listed the problems as the tiny agent hit them, and each one is something
+a product like Claude Code has an answer
+for.
 
 - **Cut output.** Mine cut long output silently, and the agent spent three
   steps investigating a program that was fine. Real agents trim too, but
@@ -564,8 +558,7 @@ trusting a friendly paragraph. *Eyes* let me check, and everything it said
 was true while the picture still had no paths. *Real eyes* let it check
 itself: it looked at its own image and changed its mind.
 
-The surprise I didn't expect: an agent does what you *said*. "Only smell"
-got me a smell that points home. Every shortcut was honest, even flagged in
+Every shortcut was honest, even flagged in
 its caveats, and every one followed the letter of my request. Writing the
 request, and the check, turned out to be the hard part. When I named the
 loophole and asked for the right comparison, even the smallest model found
@@ -579,9 +572,15 @@ next call what happened. In both cases a bad signal (traffic instead of
 information, a check that measures the wrong thing) leads the whole loop
 astray. When the signal is right, something capable comes out.
 
-All of it, five ant runs on two models, cost less than a dollar of the 10
+Main conclusions:
+
+* I learned what an agent is
+
+* All of it, five ant runs on two models, cost less than a dollar of the 10
 USD. I still don't have the million dollars, but I know better what I would
 be asking, and what I would have to check.
+
+* I do not know exactly which model configuration was best, as Haiku was not 100% successful, but in future experiments I would likely start with better prompts and small models.
 
 Also this time, Claude did the first draft of the post and I iterated. This
 time I knew what was inside the box while it did.

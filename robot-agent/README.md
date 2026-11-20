@@ -82,7 +82,8 @@ Free versions of all of the above: add `--fake`.
 ## Setup details worth knowing
 
 - Seeds: house `h` has floor-plan seed `h` and lidar-noise seed `h`, so repeated runs of one house differ only in what the model does.
+- The robot never starts in the exit's room, so every run has to find at least one door first. (The pilot ran before this rule: 3 of its 5 houses started in the exit room.)
 - Step limit: 200 actions (moves and turns) by default, the same for every setting.
 - Success is judged by the simulator: the robot's centre leaves the outer wall. The run ends there. Calling `done` inside counts as a failure.
 - The walls are 8 cm thick. With zero-thickness walls, a wall seen end-on can slip between two lidar rays: invisible, but solid.
-- The wall follower is guaranteed to get out (every interior wall connects to the outer wall; `sim.check_house` verifies this for every house), but it is slow: it got out of all of the first 200 houses (median 148 steps, max 1482), but only 60% within 200 steps. The summary reports it with and without the step limit.
+- The wall follower is guaranteed to get out (every interior wall connects to the outer wall; `sim.check_house` verifies this for every house), but it is slow: it got out of all of the first 200 houses (median 170 steps, max 1075), but only 55% within 200 steps. The summary reports it with and without the step limit.

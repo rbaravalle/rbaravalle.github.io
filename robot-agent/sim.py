@@ -156,10 +156,15 @@ def make_house(seed, n_splits=None):
 
     walls = [tuple(round(v, 3) for v in w) for w in walls]
 
-    # Start: a random free spot in a random room, random heading.
+    # Start: a random free spot in a random room other than the exit's room,
+    # random heading. So every run has to find at least one door before the
+    # exit: starting next to the exit would test nothing about memory.
     house = House(seed, W, H, walls, rooms, tuple(round(v, 3) for v in exit_seg), (0, 0, 0), doors)
+    mx, my = (exit_seg[0] + exit_seg[2]) / 2, (exit_seg[1] + exit_seg[3]) / 2
+    start_rooms = [r for r in rooms
+                   if not (r[0] - 1e-6 <= mx <= r[2] + 1e-6 and r[1] - 1e-6 <= my <= r[3] + 1e-6)]
     for _ in range(1000):
-        x0, y0, x1, y1 = rng.choice(rooms)
+        x0, y0, x1, y1 = rng.choice(start_rooms)
         x, y = rng.uniform(x0 + 0.45, x1 - 0.45), rng.uniform(y0 + 0.45, y1 - 0.45)
         if _clearance(walls, x, y) > 0.45 and _dist_point_segment(x, y, *exit_seg) > 1.0:
             break

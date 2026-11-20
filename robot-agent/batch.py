@@ -202,7 +202,7 @@ def summarize(batch_dir, rows, args, problems, interrupted):
               "- `results.csv` / `results.jsonl`: one row per run",
               "- `notes.md`: the notebook agent's notes, in order",
               "- `<run>/transcript.jsonl`: everything sent and received; each call record holds "
-              "only the messages that changed (`kept_messages` = how many leading messages are the "
+              "only the text blocks that changed (`kept_blocks` = how many leading blocks are the "
               "same as in the previous call)",
               "- `<run>/replay.json`: open with `viewer.html`",
               "- `terminal.log`: everything printed", ""]

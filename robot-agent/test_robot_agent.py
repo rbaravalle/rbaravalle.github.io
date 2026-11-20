@@ -291,3 +291,12 @@ def test_real_sdk_requests(setting):
             return [{k: v for k, v in b.items() if k != "cache_control"} for b in msgs[0]["content"]]
         for a, b in zip(server.requests, server.requests[1:]):
             assert strip(b["messages"])[:len(a["messages"][0]["content"])] == strip(a["messages"])
+
+
+@pytest.mark.parametrize("seed", range(40))
+def test_start_is_not_in_the_exit_room(seed):
+    h = sim.make_house(seed)
+    x, y, _ = h.start
+    mx, my = (h.exit[0] + h.exit[2]) / 2, (h.exit[1] + h.exit[3]) / 2
+    room = next(r for r in h.rooms if r[0] <= x <= r[2] and r[1] <= y <= r[3])
+    assert not (room[0] - 1e-6 <= mx <= room[2] + 1e-6 and room[1] - 1e-6 <= my <= room[3] + 1e-6)

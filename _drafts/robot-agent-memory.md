@@ -1,5 +1,7 @@
 ---
 title: "How much does a robot need to remember? An agent with no map"
+# Fixed address for the local preview. Remove when publishing (move to _posts/).
+permalink: /drafts/robot-agent-memory/
 ---
 
 <!--

@@ -556,6 +556,29 @@ processing, moved from the code into the prompt. Either I turn 72 numbers into
 "clear" and "farthest" before the model sees them, or I tell the model how to
 do that itself, and it does it every step, slowly, at a price.
 
+## Round 8: a house that hides its exit
+
+So far, no memory setting has won, and the reason is the same every time: the
+robot could see the exit from far away, through doorways in a row, and once
+you can see where you're going you don't need to remember where you've been.
+To actually ask the memory question, the exit has to stay out of sight.
+
+That is harder to find than I thought. I wrote a search that checks, for every
+point of the floor outside the exit's room, whether a straight line reaches
+the exit gap without touching a wall. With doors this wide, almost every house
+leaks: only 1 in 400 hides its exit from everywhere outside its room. So the
+rule is slightly looser: the exit can't be seen from the start room or from
+any dead end, and from almost nowhere else.
+
+House 886 is the best of the first 2,000. The robot starts in a middle-left
+room with two doors: one leads down to a small dead end, the other to a tall
+room on the right. From there a door leads up to the top room, and the exit is
+at its far left end. The exit can be seen from 0.4% of the right room's floor
+and from nowhere else outside the top room. The wall follower explores the dead
+end and the right room on the way, and needs 465 actions.
+
+TODO: results (8-direction scan, clear + farthest; several runs per setting).
+
 ## What it costs
 
 Failing is what costs money. A run that fails uses all 200 actions: about 3
@@ -601,6 +624,18 @@ Everything in this post, 70 agent runs in eight batches, cost **$4.36**.
 * The code, seeds, transcripts and notes are all published in the repository.
 
 ## What I take away
+
+In short:
+
+1. **Seeing mattered more than remembering.** The two fixes that turned
+   failure into success were both about what the robot could see: distances
+   from its body, and a scan that shows gaps. Neither was about memory.
+2. **More data didn't help by itself.** All 72 rays only worked once I
+   explained how to read them, and then cost twelve times as much as my
+   8-direction summary, for a worse result. Data shaped for driving beat raw
+   data.
+3. **Memory: TODO after round 8.** Until then there was no winner, because in
+   every house the robot could see the exit from far away.
 
 
 I wanted to try an AI agent on a simple robotic task for the first time, as a first step.

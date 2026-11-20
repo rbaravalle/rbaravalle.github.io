@@ -1,0 +1,14 @@
+# Local preview only. GitHub Pages reads _config.yml and never this file.
+# It adds what GitHub Pages does by itself (a default layout for every page
+# and post), so the site looks the same on your machine:
+#   jekyll serve --drafts --livereload --config _config.yml,_config.local.yml
+plugins:
+  - jekyll-default-layout
+  - jekyll-optional-front-matter
+  - jekyll-relative-links
+  - jekyll-feed
+  - jekyll-seo-tag
+exclude:
+  - robot-agent/runs
+  - tiny-agent/runs
+  - _config.local.yml

@@ -366,13 +366,46 @@ recognition, done by hand:
 
 ## Round 4: a harder house
 
-TODO: house 260, one run per setting, with clear + farthest (and, if run, all
-72 rays). Three doors from the start to the exit, where house 47 had two. The
-exit's room is right above the start room, but there is no door between
-them: the way out is a U, through the bottom-left room and the top-left room.
-The exit isn't visible from the start, and the robot has to drive *away* from
-it first. The wall follower
-takes 149 actions.
+With the sensor fixed, I wanted a harder house: house 260, three doors from
+the start to the exit, where house 47 had two. The exit's room is right above
+the start room, but there is no door between them: the way out is a U,
+through the bottom-left room and the top-left room. The exit isn't visible
+from the start, and the robot has to drive *away* from it first. The wall
+follower takes 148 actions.
+
+| | got out | actions | cost |
+|---|---|---|---|
+| wall follower | yes | 148 | $0 |
+| goldfish | yes | 27 | $0.005 |
+| window | yes | 21 | $0.007 |
+| notebook | yes | 22 | $0.008 |
+| full history | yes | 20 | $0.004 |
+| odometry | yes | 15 | $0.003 |
+
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v4-full-h260-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v4-goldfish-h260-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v4-wall-h260-r0.json' | relative_url }}"
+     data-labels="Full history (round 4),Goldfish (round 4),Wall follower (round 4)"></div>
+
+Every setting got out, every one took the same U, and none of them went back
+into a room it had left. The whole batch cost under 3 cents. The strategy is
+visible in what the full-history robot said: it follows the biggest
+"farthest" reading, from opening to opening.
+
+> The back-right slice reports 5.48 m of farthest range, the only sign of an
+> opening, so I'll turn to face it.
+
+> The right side shows a view past 8 m, so the exit is likely that way. I'll
+> turn right 90 degrees to face it.
+
+In every run the exit first showed up from the top-left room, through the
+doorway into the exit's room.
+
+"Harder" was the wrong word, though. House 260 has more doors, but no dead
+end: its rooms form a chain, so every opening the robot follows leads either
+forward or back the way it came. Following openings can't go wrong for long
+in a house like that. House 47 does have a dead end, and in round 3 the
+goldfish, window and notebook all went into it four or five times. A house
+with dead ends and loops is where memory should matter, and that is the test
+I haven't run yet.
 
 ## What it costs
 
@@ -388,7 +421,7 @@ so it never cost much more than the window. Less memory was cheaper per
 action, but the real cost driver is the number of actions, and an agent that
 goes in circles takes a lot of them.
 
-Everything in this post, 50 agent runs in four rounds, cost **$2.38**.
+Everything in this post, 55 agent runs in five batches, cost **$2.41**.
 
 ## Limitations
 
@@ -400,7 +433,10 @@ Everything in this post, 50 agent runs in four rounds, cost **$2.38**.
   can't say from one run each that full history beats the goldfish in round 3.
 * House 47 may be easy once the robot can see gaps: in round 3, a few rays
   reached the exit from the start room itself, through two doorways in a
-  row, at action 7.
+  row, at action 7. House 260 has no dead end at all. Neither is the house
+  that would test memory hardest.
+* I didn't run the version that sends all 72 rays (`--scan rays`), so "would
+  the model do better reading everything?" is still open.
 * The simulator is only shaped like a Create 3: perfect actions, no wheel
   slip, walls as thin boxes, and a lidar summarised into 8 directions. Even
   with clear and farthest, the model doesn't know *where* in a 45-degree slice
@@ -419,8 +455,9 @@ of the post learning what it needs to *see*. The model wasn't the weak link I
 expected. Twice, the weak link was the interface I wrote for it: a distance
 measured from the wrong place, and a summary that kept the closest thing and
 threw away the gaps. Fixing those two took an agent that got out once in
-twenty runs to one that got out in 18 actions, for less than half a cent.
-Memory, in this house, mattered much less than I thought.
+twenty runs to one that got out in 18 actions, for less than half a cent,
+and then out of a house with three doors in 15 to 27 actions, whatever its
+memory. Memory, in these houses, mattered much less than I thought.
 
 It is the same lesson as post 2, from the other side. There, the agent
 followed the letter of my request and found loopholes in my check. Here, I

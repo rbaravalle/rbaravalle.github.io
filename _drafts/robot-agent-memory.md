@@ -5,10 +5,12 @@ permalink: /drafts/robot-agent-memory/
 ---
 
 <!--
-DRAFT. Things marked TODO need the second round of runs (clearance + odometry)
-before they can be written. Everything else is from the runs of 2026-11-20:
-the pilot (5 houses, 25 runs, $0.69) and house 47 (5 runs per memory
-setting, 20 agent runs, $1.24), with Claude Haiku 5.5 at medium effort.
+DRAFT, second version. All numbers are from the runs of 2026-11-20, with
+Claude Haiku 5.5 at medium effort:
+  pilot:    5 houses, 1 run per setting, $0.69
+  round 1:  house 47, 5 runs per setting, $1.24
+  round 2:  house 47, 1 run per setting (clearance, odometry), $0.38
+  round 3:  house 47, 1 run per setting (clear + farthest), $0.07
 -->
 
 In the [last post]({% post_url 2026-11-18-a-tiny-agent %}) I opened the box:
@@ -36,10 +38,14 @@ turn into a kind of map in words?
 
 Memory is also what costs money. Everything the agent remembers is sent to
 the model again on every call: more memory means more tokens, more latency,
-more context. So the question for this post is:
+more context. So the question for this post was:
 
 **Without a map, how much memory does a robot agent need, what does it choose
 to remember, and what does that memory cost?**
+
+I'll spoil one thing: the answer I got is mostly about something else. What
+the robot could *see* mattered more than what it could remember, and what it
+could see was my decision, not the model's.
 
 ## The setup
 
@@ -54,26 +60,28 @@ this post is pure software. All the code is in
 * **The robot.** Round, 0.17 m of radius, about the size of a Create 3. Two
   actions: `move(meters)` and `turn(degrees)`. A move stops if it bumps into
   something, and says so.
-* **The lidar.** After every action, a fresh scan: the shortest distance in 8
-  directions (front, front-left, left, ... front-right), as text, with a little
-  noise. The house is small, so from inside it every reading is under 8 m. A
-  reading of `>8 m` means open space beyond the house: that is the only hint of
-  where the exit is.
+* **The lidar.** It casts 72 rays, one every 5 degrees. The model doesn't get
+  72 numbers: after every action it gets a summary, as text, of 8 directions
+  (front, front-left, left, ... front-right), 45 degrees each, with a little
+  noise. *What* that summary contains turned out to be the most important
+  decision in this post, and I got it wrong twice. The house is small, so
+  from inside it nothing is farther than 8 m. A reading of `>8 m` means open
+  space beyond the house: that is the only hint of where the exit is.
 * **No odometry.** The real Create 3 counts its wheel turns, so it always
   roughly knows where it is relative to where it started. That is a kind of
   memory you get for free, and I left it out on purpose, to keep the memory
-  question clean. (I bring it back at the end.)
+  question clean. (It comes back in round 2.)
 * **Success** is judged by the simulator, not the model: the robot's centre has
   to leave the house. The agent can call `done` to give up; calling it while
   still inside counts as a failure.
 
 The agent loop is the one from post 2, with the shell tools swapped for
-`move` and `turn`. Same model: Claude Haiku 5.5, the small cheap one. Each
-call costs a fraction of a cent, and the script logs every token.
+`move` and `turn`. Same model: Claude Haiku 5.5, the small cheap one, at its
+default ("medium") effort.
 
 ## Four memories
 
-The robot sees its past as a short log, one line per action:
+The robot sees its past as a short log, one entry per action:
 
 ```
 Step 12. You said: "The front is the most open direction, so I'll drive
@@ -96,14 +104,14 @@ reasoning is what it said out loud.
 I expected less memory to be cheaper, but that isn't obvious, because of
 prompt caching. Full history only ever grows at the end, so on every call
 almost all of it can be read back from a cache at a tenth of the price. A
-sliding window changes on every call, so it can't. In the runs below, 99% of
-the full-history input came from the cache, against about 40% for the window.
+sliding window changes on every call, so it can't. In the runs below, over
+90% of the full-history input came from the cache, against a third to 40% for
+the window.
 
 ## The baseline: keep the wall on your right
 
 To compare against, the oldest trick for mazes: keep one hand on the wall and
-walk. No model, no memory, about 30 lines of Python reading the same 8-number
-scan.
+walk. No model, no memory, about 30 lines of Python reading the same scan.
 
 Because every wall in these houses is connected to the outer wall, following
 the wall on your right is *guaranteed* to take you out, eventually. I want to
@@ -115,26 +123,30 @@ steps.
 The agent should be able to beat it: it can drive 2 metres at a time, and it
 can, in principle, think.
 
-## What happened
+## The pilot: my first mistake
 
 I started with a pilot: 5 houses, one run of each setting, to see what a run
 costs. Total: $0.69. The first lesson was about my experiment, not the agent.
 In one house every setting got out **in 2 steps**: the robot started in the
 exit's room, with the exit in plain view. Three of the five houses started in
 the exit's room. Those runs measure nothing about memory, and if I had
-averaged them in, they would have looked like a success. So now the robot
-always starts in another room.
+averaged them in, they would have looked like a success. That is when I added
+the rule that the robot never starts in the exit's room.
 
-Then I picked one house that needs some memory, house 47, and ran each
-setting five times. This is the floor plan, with the wall follower's run:
+Then I picked one house that needs some memory, house 47, and stayed with it.
 
-<div data-robot-replay="{{ '/assets/robot-agent/runs/v1-wall-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v1-goldfish-h047-r2.json' | relative_url }},{{ '/assets/robot-agent/runs/v1-full-h047-r3.json' | relative_url }},{{ '/assets/robot-agent/runs/v1-notebook-h047-r2.json' | relative_url }}"
-     data-labels="Wall follower,Goldfish (the one success),Full history,Notebook"></div>
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v3-wall-h047-r0.json' | relative_url }}"
+     data-labels="Wall follower"></div>
 <script src="{{ '/assets/robot-agent/replay.js' | relative_url }}"></script>
 
 The robot starts bottom left. The way out goes up through the top-left room,
 whose door to the exit room is high on its right wall. The bottom-right room
-is a dead end.
+is a dead end. The wall follower takes 131 actions. The thin lines are the
+lidar's 72 rays at each step; dashed rays see nothing within 8 m.
+
+## Round 1: lost, with all the memory it needs
+
+Five runs of each setting:
 
 | | runs | got out | bumps per run | cost per run |
 |---|---|---|---|---|
@@ -145,72 +157,60 @@ is a dead end.
 | full history | 5 | 0 | 2.6 | $0.077 |
 
 One success out of twenty, and it went to the setting with the *least*
-memory. Five runs can't rank anything, and I'm not going to pretend they do:
-that goldfish was lucky. After 98 actions of wandering it happened to turn
-toward the open door, saw `>8 m`, and drove at it. What the runs do show
-clearly is *how* the agent fails, and it fails the same way with every
-memory.
+memory. That goldfish was lucky: after 98 actions of wandering it happened to
+turn toward the open door, saw `>8 m`, and drove at it. Five runs can't rank
+anything, and I'm not going to pretend they do. What they show clearly is
+*how* the agent fails, and it failed the same way with every memory.
 
-### It forgets its own body
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v1-full-h047-r3.json' | relative_url }},{{ '/assets/robot-agent/runs/v1-notebook-h047-r2.json' | relative_url }}"
+     data-labels="Full history (round 1),Notebook (round 1)"></div>
 
-Of the 65 bumps, 51 came from the same mistake: the scan says the front is
-clear for 1.63 m, the model asks for `move(1.5)`, and the bumper stops it at
-1.45 m. The distance was measured from the centre of the robot, and the
-front of the robot is 17 cm ahead of its centre. The prompt said so, once.
-The model read the number as "how far I can drive".
+**It forgot its own body.** Of the 65 bumps, 51 came from the same mistake:
+the scan says the front is clear for 1.63 m, the model asks for `move(1.5)`,
+and the bumper stops it at 1.45 m. The distance was measured from the centre
+of the robot, and the front of the robot is 17 cm ahead of its centre. The
+prompt said so, once. The model read the number as "how far I can drive".
 
-That one is my fault more than the model's: I gave it the number a sensor
-gives, not the number a driver needs. In the second round every reading is
-the *free space in front of the body*. TODO: did the bumps go away?
-
-### It goes around in circles, with all the memory it needs
-
-This is the run that surprised me. With **full history**, the robot drove
-into the dead-end room **six times**. Every time, it had in front of it the
-whole log of the previous visits. And every time it reasoned as if it were
-somewhere new:
+**It went around in circles.** With full history, the robot drove into the
+dead-end room **six times**. Every time, it had in front of it the whole log
+of the previous visits, and every time it reasoned as if it were somewhere
+new:
 
 > The front is open at 2.73 m, the most room in this scan, so I'll drive
 > forward 2 m.
 
-Its strategy in every setting is the same: drive toward the most open
+Its strategy in every setting was the same: drive toward the most open
 direction. In a doorway, the most open direction is into the next room. In
 that room, the most open direction is back through the doorway. It took
-until action 146 for it to say "the corridor ends I've been cycling through",
-and by then it had 54 actions left.
+until action 146 for it to say "the corridor ends I've been cycling through".
 
-The memory was there. What was missing was the ability to say *"I have been
-here before"*. Two scans from the same doorway are never quite the same: a
-few centimetres of position, a few degrees of heading, a little noise, and
-eight numbers all change. Matching what you see now to what you saw before,
-without knowing where you are, is called *place recognition* (or *loop
-closure*). It is one of the hard parts of SLAM, and it is exactly the part we
-write by hand.
+The memory was there. What seemed to be missing was the ability to say *"I
+have been here before"*. Two scans from the same doorway are never quite the
+same: a few centimetres of position, a few degrees of heading, a little
+noise, and eight numbers all change. Matching what you see now to what you
+saw before, without knowing where you are, is called *place recognition* (or
+*loop closure*). It is one of the hard parts of SLAM, and it is exactly the
+part we write by hand.
 
-### The notebook: strategy, not a map
-
-The notebook was the setting I was most curious about: given 500 characters
-it chooses itself, does the robot write a map? It doesn't. It writes two
-to four notes per run, and they are lessons and plans:
+**The notebook held strategy, not a map.** Given 500 characters it chooses
+itself, the robot wrote two to four notes per run, and they were lessons and
+plans:
 
 > Step 76: loop detected. Forward 2m from spot with front~2.4 always leads
 > to front 0.4 wall (room ~3m deep). Spots cycle. Next: try back-right
 > diagonal (turn -135) and explore new headings; avoid front-back shuttle.
 
-It notices the loop. It describes it well. It still can't say *where* the loop
-is, so it can't avoid it. The closest it came to a map was one run that
+It notices the loop and describes it well. It still can't say *where* the
+loop is, so it can't avoid it. The closest it came to a map was one run that
 started naming places:
 
 > Step 100: Oscillating between A (front wall 0.15, back open 3.3) and B (2m
 > behind A, front 2.15). Stop moving forward into A.
 
 A and B, defined by what the lidar sees there and by the distance between
-them. That is a map in words, two nodes and an edge. It is also where
-the notebook ran out: 500 characters hold a strategy or a couple of places,
-not a house.
-
-And in the pilot, one notebook did something I liked a lot. At action 72, after
-going back and forth for most of the run, it wrote:
+them: two nodes and an edge, a map in words. And in the pilot, one notebook
+did something I liked a lot. At action 72, after going back and forth for
+most of the run, it wrote:
 
 > New plan (step 73+): systematic wall-follow instead of oscillating. Rule:
 > if front <1.0 m, turn -90 (right). Else move 1 m forward.
@@ -218,75 +218,161 @@ going back and forth for most of the run, it wrote:
 It got out two actions later. Left alone with a notebook, the agent
 reinvented the baseline.
 
-## Giving it back its position
+## Round 2: give it back its body and its position
 
-If the problem is not knowing *where* it has been, the obvious test is to
-give that back. The real Create 3 counts its wheel turns: odometry, a rough
-position relative to where it started, which drifts a little with every
-move. So in the second round there is a fifth setting: **full history plus
-odometry**. Every line of the log now ends with something like
-`Odometry: x 1.23 m, y -0.40 m, heading 90 degrees`.
+Two changes, and from here on one run per setting: one run is enough to see
+the behaviour, and I'm not measuring success rates anyway.
 
-If place recognition is the problem, this should break the loop: the robot
-can see that it was at the same coordinates twenty actions ago.
+1. **Clearance.** Every reading became the free space in front of the body,
+   not the distance from the centre: the number a driver needs, not the
+   number a sensor gives.
+2. **Odometry**, as a fifth setting: full history, plus the wheel odometry
+   after every action (`Odometry: x 1.23 m, y -0.40 m, heading 90 degrees`,
+   relative to the start, drifting a little). If not knowing *where* it had
+   been was the problem, this should fix it.
 
-TODO: results of the second round (house 47, one run per setting,
-clearance + odometry). What to look for:
-- Did the bumps drop with clearance?
-- Does the full-history robot still visit the dead end again and again?
-- With odometry, does it say things like "I was here at step 20"? Does it
-  get out?
-- What does the notebook write when it also has odometry? (not tested: the
-  odometry setting has no notebook)
+Clearance worked at once: 4 bumps in the five runs, against 1 to 5 per run
+before. One run got out (the notebook, in 78 actions).
+
+Odometry did something more interesting, and still failed. The robot started
+to reason with a map in its head:
+
+> I'm at about (0.6, 1.4) with 103 actions left and no exit seen yet. The
+> unexplored pocket seems to be northwest, between x -1 and 0 and y 2 to 3.5,
+> so I'll face west and probe.
+
+> The southeast corner near (1.2, -0.3) is the last lead I haven't checked.
+
+That is a map in words, with coordinates. It reached the exit's room at action
+33 and searched it, methodically, for 38 actions. At action 39 it was 60 cm
+from the exit, right below it, facing it. The front read **0.34 m**.
+
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v2-odometry-h047-r0.json' | relative_url }}"
+     data-labels="Odometry (round 2)"></div>
+
+## My second mistake: the sensor hid the exit
+
+Each of the 8 directions reported the *minimum* of its slice: the closest
+thing in 45 degrees. That is what you want for not hitting things, and it is
+what my plan said. But a gap only shows up in a minimum if the *whole* slice
+fits through it. At action 39, some rays went out through the exit. The door
+jamb, in the same slice, set the reading.
+
+So I measured it. From random poses inside the exit's room of house 47, the
+exit read `>8 m` in **7%** of the scans, and in 16% within 1.5 m of it. If each
+direction had also reported its farthest ray, it would have been 100%.
+Doorways hide in the same way. The prompt told the robot that `>8 m` was the
+only sign of the exit, and my sensor almost never showed it.
+
+That changes how to read everything above. Some of the "going around in
+circles" was a robot that couldn't see the doors. The replay viewer didn't
+help me either: it drew the 8 summary readings as 8 lines, so it looked like
+a lidar with 8 rays, and looked fine. A nice picture isn't a measurement, and
+this time the picture I was trusting was my own.
+
+## Round 3: let it see the gaps
+
+One change: every direction reports two numbers.
+
+```
+Scan: front clear 1.05 m, farthest 3.76 m; front-left clear 0.75 m,
+farthest 2.80 m; ...
+```
+
+"Clear" for driving, "farthest" for seeing gaps. And the prompt says so: when
+farthest is much larger than clear, part of the slice sees through a gap.
+
+| | got out | actions | bumps | cost |
+|---|---|---|---|---|
+| wall follower | yes | 131 | 1 | $0 |
+| goldfish | yes | 40 | 0 | $0.008 |
+| window | yes | 68 | 5 | $0.029 |
+| notebook | yes | 62 | 6 | $0.026 |
+| full history | yes | 18 | 0 | $0.004 |
+| odometry | yes | 18 | 0 | $0.004 |
+
+Everything got out. The full-history robot went start room, top-left room,
+exit room, out, in 18 actions, and it read the new numbers exactly as
+intended:
+
+> The front is blocked at about 0.7 m, but the front-left slice shows a gap
+> (clear 0.75 m, farthest 2.8 m). I'll turn 45° left toward it and rescan.
+
+> The front slice shows open space beyond 8 m with 1.58 m clear, so the exit
+> is straight ahead.
+
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v3-full-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v3-goldfish-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v3-window-h047-r0.json' | relative_url }}"
+     data-labels="Full history (round 3),Goldfish (round 3),Window (round 3)"></div>
+
+The goldfish, the window and the notebook still went into the dead end four or
+five times each before they found the right door, so memory may still matter.
+One run each can't say how much. The window's bumps were new: the front was
+clear for 3.7 m, it asked for 2 m, and its side caught a door jamb, five times
+in seven actions at the same doorway. And the notebook's one note was place
+recognition, done by hand:
+
+> Steps 1-10 loop: current scan matches step-1 scan (front 1.6/3.6, left
+> 0.4/4.0).
 
 ## What it costs
 
-A run that fails uses all 200 actions, and failing runs are the expensive
-ones: about 3 cents for the goldfish, 7 to 8 cents for the others. Most of
-it is not the memory: it is the model *thinking* before each move, about 300 to
-400 output tokens per action, almost all of it hidden reasoning. Full history sends
-the most text (on average 3.5 million input tokens per run in house 47), but
-almost all of it comes from the cache, so it costs only a little more than
-the window.
+Failing is what costs money. A run that fails uses all 200 actions: about 3
+cents for the goldfish, 7 to 8 cents for the others in round 1, and 18 cents
+for the odometry run in round 2, which thought three times as much as the
+others. Most of the cost is not the memory: it is the model *thinking* before
+each move, 300 to 400 output tokens per action, almost all of it hidden
+reasoning. A run that gets out in 18 actions costs less than half a cent.
 
-So less memory was cheaper, but not by much, and not for the reason I
-expected. The goldfish is cheap mostly because its prompt is short. Full
-history is affordable because of caching. The real cost driver is the number
-of actions, and an agent that goes in circles takes a lot of them.
+Full history sends the most text, but almost all of it comes from the cache,
+so it never cost much more than the window. Less memory was cheaper per
+action, but the real cost driver is the number of actions, and an agent that
+goes in circles takes a lot of them.
 
-All of the runs in this post so far (the pilot and house 47, 40 agent runs)
-cost $1.93.
+Everything in this post, 50 agent runs in four rounds, cost **$2.38**.
 
 ## Limitations
 
 * This is a learning experiment, not a claim that language models navigate
-  well (they don't, here) or badly in general. One small model, one prompt,
-  one house for most of it.
-* Very few runs: five per setting in house 47, and one per setting in the
-  second round. Enough to see *how* it behaves, not to rank the settings.
+  well or badly in general. One small model, one prompt, one house for most of
+  it.
+* Very few runs: five per setting in round 1, one per setting after that.
+  Enough to see *how* it behaves, not to rank the settings. In particular, I
+  can't say from one run each that full history beats the goldfish in round 3.
+* House 47 may be easy once the robot can see gaps: in round 3, a few rays
+  reached the exit from the start room itself, through two doorways in a
+  row, at action 7.
 * The simulator is only shaped like a Create 3: perfect actions, no wheel
-  slip, walls as thin boxes, a lidar reduced to 8 numbers. Eight numbers is a
-  very poor view of a room; a doorway is just one reading a bit longer than
-  its neighbours.
+  slip, walls as thin boxes, and a lidar summarised into 8 directions. Even
+  with clear and farthest, the model doesn't know *where* in a 45-degree slice
+  a gap is.
 * No odometry, except in the one setting that adds it.
-* Model: Claude Haiku 5.5 (`claude-haiku-5-5`), medium effort. Runs on 20
-  November 2026. TODO: date of the second round.
+* Model: Claude Haiku 5.5 (`claude-haiku-5-5`), medium effort. All runs on 20
+  November 2026.
 * The code, seeds, transcripts and notes are all published in the repository.
-  The replays above are from the first round, before the clearance fix.
 
 ## What I take away
 
-TODO: write after the second round. Draft:
+I set out to ask how much a robot agent needs to remember, and I spent most
+of the post learning what it needs to *see*. The model wasn't the weak link I
+expected. Twice, the weak link was the interface I wrote for it: a distance
+measured from the wrong place, and a summary that kept the closest thing and
+threw away the gaps. Fixing those two took an agent that got out once in
+twenty runs to one that got out in 18 actions, for less than half a cent.
+Memory, in this house, mattered much less than I thought.
 
-The hand-written stack exists for a reason. The wall follower, 30 lines with
-no memory at all, beat every memory setting I tried, because it encodes one
-true fact about these houses. The agent had more memory than it needed and
-still went in circles, because memory of raw observations is not the same as
-knowing where you are. Recognising a place you have seen before is the part
-SLAM solves, and it is the part the agent was missing.
+It is the same lesson as post 2, from the other side. There, the agent
+followed the letter of my request and found loopholes in my check. Here, I
+wrote the sensor to the letter of my plan ("8 sectors of minimum distance")
+and it quietly hid the one thing the robot was looking for. An agent is only
+as good as the feedback it gets, and writing that feedback is still a
+hand-written, very human job.
 
-That doesn't answer whether an agent can replace the stack. It does tell me
-where to look next: not at more memory, but at what the memory is *made of*.
+So, can an agent replace the hand-written stack? Not from this. But the
+places where it struggled are the places where the stack does its work:
+recognising a place you have seen before, which the notebook tried to do by
+hand, and turning raw sensor data into something you can reason with, which
+I did badly, twice. The comparison I really want, the agent against a real
+SLAM and planner, is for a later post.
 
 Also this time, Claude built the simulator and drafted the post, and I
 iterated.

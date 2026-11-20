@@ -404,8 +404,85 @@ end: its rooms form a chain, so every opening the robot follows leads either
 forward or back the way it came. Following openings can't go wrong for long
 in a house like that. House 47 does have a dead end, and in round 3 the
 goldfish, window and notebook all went into it four or five times. A house
-with dead ends and loops is where memory should matter, and that is the test
-I haven't run yet.
+with dead ends is where memory should matter.
+
+## Round 5: a house with a trap
+
+So I looked for a trap. In house 287 the robot starts in a long room at the
+bottom, whose only door leads to a small hub room with two more doors. One
+goes up to the exit's room. The other goes to the biggest room in the house,
+and that room is a dead end. A robot that drives toward the most open space
+should try the big room first, and then needs to remember that it already did.
+(My floor plans can have dead ends, but never loops: each new wall adds
+exactly one door, so the rooms always form a tree.)
+
+| | got out | actions | cost |
+|---|---|---|---|
+| wall follower | no (needs 322) | 200 | $0 |
+| goldfish | yes | 21 | $0.004 |
+| window | yes | 15 | $0.004 |
+| notebook | yes | 13 | $0.004 |
+| full history | yes | 27 | $0.007 |
+| odometry | yes | 16 | $0.003 |
+
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v5-wall-h287-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v5-full-h287-r0.json' | relative_url }}"
+     data-labels="Wall follower (round 5),Full history (round 5)"></div>
+
+The trap caught exactly one robot: the wall follower. Keeping its hand on the
+wall, it went into the dead end, searched all of it, and ran out of actions
+on its way back; it needs 322 to get out. No agent went into the dead end at
+all. Every one of them saw the exit *from the start room*, between action 4
+and action 9, through two doorways in a row, and then followed that `>8 m`
+reading out.
+
+So the trap didn't test memory either. When I picked the house I checked that
+the exit wasn't visible from the starting spot, but not from the rest of the
+start room. In houses this small, doorways often line up, and the exit can be
+seen from far away. Once you can see where you're going, you don't need to
+remember where you've been. A real memory test needs an exit that stays out
+of sight until the very last room, and I haven't built that yet.
+
+## Round 6: all 72 rays
+
+The last question: what if the model reads the whole scan, 72 rays labelled
+by angle, instead of my 8-direction summary? Same house as rounds 1 to 3,
+house 47, one run per setting.
+
+| | got out | actions | bumps | cost |
+|---|---|---|---|---|
+| goldfish | no | 200 | 53 | $0.077 |
+| window | yes | 49 | 10 | $0.043 |
+| notebook | no | 200 | 48 | $0.193 |
+| full history | no | 200 | 47 | $0.348 |
+| odometry | no | 200 | 55 | $0.418 |
+
+Much worse: one success, about fifty bumps per run, and three times as much
+thinking per action as in round 3 (about 1,000 output tokens against 300).
+This one batch cost more than everything else in the post together.
+
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v6-rays-full-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v6-rays-window-h047-r0.json' | relative_url }}"
+     data-labels="Full history, 72 rays (round 6),Window, 72 rays (round 6)"></div>
+
+The bumps have one cause, and it's mine again. The model reads the single ray
+straight ahead and drives:
+
+> The scan shows about 4 m of clear space straight ahead and to the
+> front-right, with walls close on the left. I'll drive forward 2 m and
+> rescan.
+
+In that scan, the ray at 0° read 3.96 m, but rays 10 to 30 degrees to the
+side read about 0.4 m: a door jamb, right next to its body. One ray says
+nothing about a robot 34 cm wide. And my prompt for this format told it
+exactly that: "you can drive forward about the distance at 0 before you touch
+something". In the 8-direction format, "clear" was the minimum over a 40°
+slice, so the width of the body was already built into the number. With raw
+rays, the model would have to do that geometry itself, and with my hint it
+didn't.
+
+So this round doesn't show that raw data is worse. It shows that my summary
+was doing real work: it turned 72 numbers into the two things that matter
+for driving (can I fit, is there a gap) before the model ever saw them. That
+is exactly the kind of hand-written processing a robotics stack is full of.
 
 ## What it costs
 
@@ -421,7 +498,11 @@ so it never cost much more than the window. Less memory was cheaper per
 action, but the real cost driver is the number of actions, and an agent that
 goes in circles takes a lot of them.
 
-Everything in this post, 55 agent runs in five batches, cost **$2.41**.
+The most expensive batch of all was the one that read all 72 rays: $1.08 for
+five runs, because each action thought three times as much, and four of the
+five runs failed.
+
+Everything in this post, 65 agent runs in seven batches, cost **$3.51**.
 
 ## Limitations
 
@@ -431,12 +512,13 @@ Everything in this post, 55 agent runs in five batches, cost **$2.41**.
 * Very few runs: five per setting in round 1, one per setting after that.
   Enough to see *how* it behaves, not to rank the settings. In particular, I
   can't say from one run each that full history beats the goldfish in round 3.
-* House 47 may be easy once the robot can see gaps: in round 3, a few rays
-  reached the exit from the start room itself, through two doorways in a
-  row, at action 7. House 260 has no dead end at all. Neither is the house
-  that would test memory hardest.
-* I didn't run the version that sends all 72 rays (`--scan rays`), so "would
-  the model do better reading everything?" is still open.
+* None of the houses really tested memory once the robot could see gaps. In
+  houses 47 and 287 the exit was visible from the start room, through
+  doorways in a row; house 260 has no dead end. A house whose exit stays
+  hidden until the last room is still to come.
+* The 72-ray round is confounded by my prompt, which told the model to trust
+  the ray straight ahead. It shows that my hint was wrong, not that raw data
+  can't work.
 * The simulator is only shaped like a Create 3: perfect actions, no wheel
   slip, walls as thin boxes, and a lidar summarised into 8 directions. Even
   with clear and farthest, the model doesn't know *where* in a 45-degree slice
@@ -457,7 +539,15 @@ measured from the wrong place, and a summary that kept the closest thing and
 threw away the gaps. Fixing those two took an agent that got out once in
 twenty runs to one that got out in 18 actions, for less than half a cent,
 and then out of a house with three doors in 15 to 27 actions, whatever its
-memory. Memory, in these houses, mattered much less than I thought.
+memory. Memory, in these houses, mattered much less than I thought, mostly
+because the robot could see the exit from far away. Once you can see where
+you're going, you don't need to remember where you've been.
+
+And when I gave it everything, all 72 rays (with a bad hint from me about
+how to read them), it did worse, not better. More data didn't help on its
+own: what helped was data already shaped into what matters for driving, and
+the shaping was the hard part. That is most of what a hand-written robotics
+stack does.
 
 It is the same lesson as post 2, from the other side. There, the agent
 followed the letter of my request and found loopholes in my check. Here, I

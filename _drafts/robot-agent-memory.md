@@ -270,7 +270,8 @@ most of the run, it wrote:
 It got out two actions later. Left alone with a notebook, the agent
 reinvented the baseline.
 
-## Round 2: give it back its body and its position
+<details markdown="1">
+<summary style="cursor: pointer; margin: 1.2em 0 0.6em;"><b>Round 2: give it back its body and its position.</b> Clearance fixed the bumps. Odometry made it reason with coordinates, a map in words, but it searched the exit's room for 38 actions, once 60 cm from the exit, without seeing it. <i>(click to expand)</i></summary>
 
 Two changes, and from here on one run per setting: one run is enough to see
 the behaviour, and I'm not measuring success rates anyway.
@@ -301,6 +302,8 @@ from the exit, right below it, facing it. The front read **0.34 m**.
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v2-odometry-h047-r0.json' | relative_url }}"
      data-labels="Odometry (round 2)"></div>
+
+</details>
 
 ## My Mistake: the sensor hid the exit
 
@@ -385,7 +388,8 @@ recognition, done by hand:
 > Steps 1-10 loop: current scan matches step-1 scan (front 1.6/3.6, left
 > 0.4/4.0).
 
-## Round 4: a harder house
+<details markdown="1">
+<summary style="cursor: pointer; margin: 1.2em 0 0.6em;"><b>Round 4: a house with three doors.</b> Every setting got out in 15 to 27 actions, but the house has no dead end, so it tested less than I thought. <i>(click to expand)</i></summary>
 
 With the sensor fixed, I wanted a harder house: house 260, three doors from
 the start to the exit, where house 47 had two. The exit's room is right above
@@ -427,7 +431,10 @@ in a house like that. House 47 does have a dead end, and in round 3 the
 goldfish, window and notebook all went into it four or five times. A house
 with dead ends is where memory should matter.
 
-## Round 5: a house with a trap
+</details>
+
+<details markdown="1">
+<summary style="cursor: pointer; margin: 1.2em 0 0.6em;"><b>Round 5: a house with a trap.</b> The trap caught only the wall follower: every agent saw the exit from the start room and drove straight to it. <i>(click to expand)</i></summary>
 
 So I looked for a trap. In house 287 the robot starts in a long room at the
 bottom, whose only door leads to a small hub room with two more doors. One
@@ -463,7 +470,10 @@ seen from far away. Once you can see where you're going, you don't need to
 remember where you've been. A real memory test needs an exit that stays out
 of sight until the very last room, and I haven't built that yet.
 
-## Round 6: all 72 rays
+</details>
+
+<details markdown="1">
+<summary style="cursor: pointer; margin: 1.2em 0 0.6em;"><b>Round 6: all 72 rays.</b> Much worse: one success, about fifty bumps per run, three times the thinking. My hint told it to trust the ray straight ahead. <i>(click to expand)</i></summary>
 
 The last question: what if the model reads the whole scan, 72 rays labelled
 by angle, instead of my 8-direction summary? Same house as rounds 1 to 3,
@@ -505,7 +515,10 @@ was doing real work: it turned 72 numbers into the two things that matter
 for driving (can I fit, is there a gap) before the model ever saw them. That
 is exactly the kind of hand-written processing a robotics stack is full of.
 
-## Round 7: all 72 rays, read properly
+</details>
+
+<details markdown="1">
+<summary style="cursor: pointer; margin: 1.2em 0 0.6em;"><b>Round 7: all 72 rays, read properly.</b> Four of five got out, doing the geometry in words, but slower and at twelve times the price of the summary. <i>(click to expand)</i></summary>
 
 Round 6 didn't solve anything; it only showed my hint was wrong. So I fixed
 the hint and ran it again, on the same house with the same data. The prompt no
@@ -555,6 +568,8 @@ The fix that worked was an explanation, and the explanation is hand-written
 processing, moved from the code into the prompt. Either I turn 72 numbers into
 "clear" and "farthest" before the model sees them, or I tell the model how to
 do that itself, and it does it every step, slowly, at a price.
+
+</details>
 
 ## Round 8: a house that hides its exit
 
@@ -671,6 +686,15 @@ recognising a place you have seen before, which the notebook tried to do by
 hand, and turning raw sensor data into something you can reason with, which
 I did badly, twice. The comparison I really want, the agent against a real
 SLAM and planner, is for a later post.
+
+One more thing, about working with the agent that built all this. I needed to
+steer it more than it looks like. It looks really capable, and it is, but you
+are still valuable for decisions and common sense. If you are distracted, it
+will try the most expensive experiments possible. (Its first plan was 100
+runs per memory setting, about $25; the whole post ended up costing under
+$5.) If you think a bit, you can help it: make it first try something that
+shows the heart of the experiment, and only expand if needed. It is the same
+as working with people.
 
 Also this time, Claude built the simulator and drafted the post, and I
 iterated.

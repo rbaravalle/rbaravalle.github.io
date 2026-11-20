@@ -507,12 +507,54 @@ is exactly the kind of hand-written processing a robotics stack is full of.
 
 ## Round 7: all 72 rays, read properly
 
-TODO: house 47, all 72 rays, one run per setting, with a corrected hint. The
-prompt no longer says to trust the ray straight ahead. It now says that the
-body is 0.34 m wide, that the smallest reading between 330 and 30 degrees is
+Round 6 didn't solve anything; it only showed my hint was wrong. So I fixed
+the hint and ran it again, on the same house with the same data. The prompt no
+longer says to trust the ray straight ahead. It now says that the body is
+0.34 m wide, that the smallest reading between 330 and 30 degrees is about
 how far it can drive, and that a doorway is a group of neighbouring rays much
-longer than the ones beside them (at 1 m, 5 degrees is about 9 cm). The same
-data as round 6; only the explanation changes.
+longer than the ones beside them (at 1 m, 5 degrees is about 9 cm).
+
+| | got out | actions | bumps | cost |
+|---|---|---|---|---|
+| goldfish | yes | 149 | 8 | $0.120 |
+| window | yes | 65 | 0 | $0.072 |
+| notebook | yes | 42 | 0 | $0.054 |
+| full history | yes | 95 | 6 | $0.111 |
+| odometry | no | 200 | 28 | $0.489 |
+
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v7-rays-notebook-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v7-rays-odometry-h047-r0.json' | relative_url }}"
+     data-labels="Notebook, 72 rays read properly (round 7),Odometry, 72 rays read properly (round 7)"></div>
+
+Four out of five got out, against one in round 6, and the bumps mostly went
+away. The model now does the geometry itself, in words:
+
+> The exit rays (355° to 10°) are open. The nearest obstacles are about 0.56 m
+> at 20° on the left and about 0.17 m at 310° on the right, which leaves
+> roughly 8 cm of clearance on each side. I'll drive a short 0.4 m and
+> re-scan.
+
+> The exit is straight ahead, but the wall corner at about 345-350° sits too
+> close to the right for a direct drive. The clear lane is about 0.1 m to my
+> left, so I'll turn left 90°, sidestep, and turn back.
+
+So the raw data does work, once someone explains what the numbers mean. But
+compare it with round 3, the same house with my 8-direction summary: there,
+every setting got out in 18 to 68 actions, for 7 cents in total. Here it took
+42 to 149 actions, and the batch cost 85 cents. The model thought about 1,500
+output tokens per action, five times as much as in round 3, working out from
+72 numbers what the summary used to hand it directly.
+
+The odometry run failed, and it wasn't from misreading. Before its bumps it
+reported the right numbers ("the nearest reading in the wider arc is 1.5 m at
+30°") and drove less than that. The wall it kept hitting was beside it, just
+outside the 30-degree arc my hint told it to check. My corrected hint is
+better, but still not the whole geometry. It also went back into the dead end
+four times, with its position in front of it every time.
+
+The fix that worked was an explanation, and the explanation is hand-written
+processing, moved from the code into the prompt. Either I turn 72 numbers into
+"clear" and "farthest" before the model sees them, or I tell the model how to
+do that itself, and it does it every step, slowly, at a price.
 
 ## What it costs
 
@@ -528,11 +570,11 @@ so it never cost much more than the window. Less memory was cheaper per
 action, but the real cost driver is the number of actions, and an agent that
 goes in circles takes a lot of them.
 
-The most expensive batch of all was the one that read all 72 rays: $1.08 for
-five runs, because each action thought three times as much, and four of the
-five runs failed.
+The most expensive batches of all were the two that read all 72 rays: $1.08
+for five runs in round 6 and $0.85 in round 7, because each action thought
+three to five times as much as with the summary.
 
-Everything in this post, 65 agent runs in seven batches, cost **$3.51**.
+Everything in this post, 70 agent runs in eight batches, cost **$4.36**.
 
 ## Limitations
 
@@ -546,9 +588,9 @@ Everything in this post, 65 agent runs in seven batches, cost **$3.51**.
   houses 47 and 287 the exit was visible from the start room, through
   doorways in a row; house 260 has no dead end. A house whose exit stays
   hidden until the last room is still to come.
-* The 72-ray round is confounded by my prompt, which told the model to trust
-  the ray straight ahead. It shows that my hint was wrong, not that raw data
-  can't work.
+* Rounds 6 and 7 depend on how I explained the 72 rays. A better explanation,
+  or a stronger model, might read them faster and more cheaply than Haiku
+  did with mine.
 * The simulator is only shaped like a Create 3: perfect actions, no wheel
   slip, walls as thin boxes, and a lidar summarised into 8 directions. Even
   with clear and farthest, the model doesn't know *where* in a 45-degree slice
@@ -573,11 +615,13 @@ memory. Memory, in these houses, mattered much less than I thought, mostly
 because the robot could see the exit from far away. Once you can see where
 you're going, you don't need to remember where you've been.
 
-And when I gave it everything, all 72 rays (with a bad hint from me about
-how to read them), it did worse, not better. More data didn't help on its
-own: what helped was data already shaped into what matters for driving, and
-the shaping was the hard part. That is most of what a hand-written robotics
-stack does.
+And when I gave it everything, all 72 rays, it did worse. With a bad hint it
+bumped into everything; with a good one it got out, but slower and at twelve
+times the price, working out on every step what my 8-direction summary had
+handed it directly. More data didn't help on its own: what helped was data
+shaped into what matters for driving, whether I wrote that shaping in code or
+explained it in the prompt. That shaping is most of what a hand-written
+robotics stack does.
 
 It is the same lesson as post 2, from the other side. There, the agent
 followed the letter of my request and found loopholes in my check. Here, I

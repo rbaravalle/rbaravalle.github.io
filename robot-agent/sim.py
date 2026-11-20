@@ -299,6 +299,7 @@ class SimRobot(Robot):
         self.house = house
         self.x, self.y, self.heading = house.start     # heading in degrees, CCW from +x
         self.rng = random.Random(f"noise-{noise_seed}")
+        self.max_rng = random.Random(f"noise-max-{noise_seed}")   # own stream: the minimums stay as before
         self.odo_rng = random.Random(f"odometry-{noise_seed}")   # its own stream: the lidar noise stays the same
         self.odo = [0.0, 0.0, 0.0]     # wheel odometry: x forward and y left of the start pose, heading deg
         self.bumps = 0
@@ -317,16 +318,29 @@ class SimRobot(Robot):
         return (round(self.x, 3), round(self.y, 3), round(self.heading, 1))
 
     def scan(self):
-        out = []
+        """Per-sector minimum distance (None = farther than LIDAR_RANGE).
+
+        The lidar casts 72 rays, one every 5 degrees. The minimum of each 45-degree
+        sector is the safety-minded summary; the maximum (in self.last_max) shows
+        gaps such as doorways, which the minimum hides; the raw rays
+        (self.last_rays, without noise) are kept for the replay viewer.
+        """
+        out, maxes, rays = [], [], []
         h = math.radians(self.heading)
         for i in range(len(SECTORS)):
             centre = h + math.radians(45 * i)
-            d = min(_ray_hit(self.x, self.y, centre + math.radians(o), self.house.walls)
-                    for o in range(-20, 21, 40 // (RAYS_PER_SECTOR - 1)))
+            ds = [_ray_hit(self.x, self.y, centre + math.radians(o), self.house.walls)
+                  for o in range(-20, 21, 40 // (RAYS_PER_SECTOR - 1))]
+            rays.extend(round(d, 3) if d <= LIDAR_RANGE else None for d in ds)
+            d = min(ds)
             if d > LIDAR_RANGE:
                 out.append(None)
             else:
                 out.append(round(max(0.0, d + self.rng.gauss(0, LIDAR_NOISE)), 2))
+            m = max(ds)
+            maxes.append(None if m > LIDAR_RANGE
+                         else round(max(0.0, m + self.max_rng.gauss(0, LIDAR_NOISE)), 2))
+        self.last_max, self.last_rays = maxes, rays
         return out
 
     def move(self, meters):
@@ -351,7 +365,8 @@ class SimRobot(Robot):
         self.odo[0] += d * math.cos(oh)
         self.odo[1] += d * math.sin(oh)
         return {"action": "move", "requested": req, "done": round(sign * moved, 2),
-                "clamped": m != req, "bump": bump, "scan": self.scan()}
+                "clamped": m != req, "bump": bump, "scan": self.scan(),
+                "scan_max": self.last_max, "rays": self.last_rays}
 
     def turn(self, degrees):
         req = float(degrees)
@@ -359,16 +374,24 @@ class SimRobot(Robot):
         self.heading = (self.heading + d + 180.0) % 360.0 - 180.0
         self.odo[2] = (self.odo[2] + d + self.odo_rng.gauss(0, ODO_TURN_NOISE) + 180.0) % 360.0 - 180.0
         return {"action": "turn", "requested": req, "done": round(d, 1),
-                "clamped": d != req, "bump": False, "scan": self.scan()}
+                "clamped": d != req, "bump": False, "scan": self.scan(),
+                "scan_max": self.last_max, "rays": self.last_rays}
 
 
-def format_scan(scan, clearance=False):
-    """The lidar as the model reads it. With clearance=True, each reading is the
-    free space between the robot's body and the nearest thing (distance from
-    the centre minus the radius), which is what matters for driving."""
+def format_scan(scan, clearance=False, scan_max=None):
+    """The lidar as the model reads it. With clearance=True, distances are free
+    space from the robot's body (distance from the centre minus the radius),
+    which is what matters for driving. With scan_max, each sector also reports
+    its farthest ray, which is what shows a gap such as a doorway or the exit."""
     off = ROBOT_RADIUS if clearance else 0.0
-    return ", ".join(f"{name} {'>8 m' if d is None else f'{max(0.0, d - off):.2f} m'}"
-                     for name, d in zip(SECTORS, scan))
+
+    def m(d):
+        return ">8 m" if d is None else f"{max(0.0, d - off):.2f} m"
+
+    if scan_max is None:
+        return ", ".join(f"{name} {m(d)}" for name, d in zip(SECTORS, scan))
+    return "; ".join(f"{name} clear {m(d)}, farthest {m(f)}"
+                     for name, d, f in zip(SECTORS, scan, scan_max))
 
 
 if __name__ == "__main__":

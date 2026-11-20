@@ -9,9 +9,11 @@
  * name them with data-labels="Goldfish,Notebook".
  *
  * What it draws: the walls (8 cm thick), the exit in green, the path so far,
- * red marks where the robot bumped, the robot, and the 8 lidar readings the
- * model got at that step (dashed when the reading was ">8 m"). Below: what
- * the model said before the action, and its notebook if it has one.
+ * red marks where the robot bumped, the robot, and its lidar at that step:
+ * all 72 rays (dashed when a ray sees nothing within 8 m). The model never
+ * sees the rays, only a summary of 8 sectors. Older replays without rays show
+ * the 8 summary readings instead. Below: what the model said before the
+ * action, and its notebook if it has one.
  * The robot itself never sees its position or the map: only the 8 numbers.
  */
 (function () {
@@ -132,10 +134,26 @@
         var st = run.steps[k - 1];
         if (st.bump) { ctx.beginPath(); ctx.arc(X(st.pose[0]), Y(st.pose[1]), 0.05 * s, 0, 7); ctx.fill(); }
       }
-      // lidar: the 8 readings the model got at this step
+      // lidar: all 72 rays when the replay has them; else the 8 summary readings
       var pose = poseAt(i), scan = scanAt(i);
       var hd = pose[2] * Math.PI / 180;
-      for (k = 0; k < 8; k++) {
+      var rays = i === 0 ? run.start_rays : run.steps[i - 1].rays;
+      if (rays) {
+        for (k = 0; k < rays.length; k++) {
+          var sector = Math.floor(k / 9), off = (k % 9) * 5 - 20;
+          var ang = hd + (sector * 45 + off) * Math.PI / 180, r = rays[k];
+          ctx.strokeStyle = COLORS.ray; ctx.lineWidth = 1;
+          ctx.setLineDash(r === null ? [3, 4] : []);
+          var L = r === null ? 8 : r;
+          ctx.beginPath(); ctx.moveTo(X(pose[0]), Y(pose[1]));
+          ctx.lineTo(X(pose[0] + Math.cos(ang) * L), Y(pose[1] + Math.sin(ang) * L)); ctx.stroke();
+          if (r !== null) {
+            ctx.fillStyle = COLORS.robot;
+            ctx.fillRect(X(pose[0] + Math.cos(ang) * r) - 1.5, Y(pose[1] + Math.sin(ang) * r) - 1.5, 3, 3);
+          }
+        }
+      }
+      for (k = 0; k < 8 && !rays; k++) {
         var a = hd + k * Math.PI / 4, d = scan[k];
         var far = d === null;
         var len = far ? 8 : d;

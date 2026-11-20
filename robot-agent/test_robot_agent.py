@@ -327,3 +327,30 @@ def test_only_the_odometry_setting_sees_odometry():
         system = recs[0]["system"]
         assert ("Odometry:" in sent) == (setting == "odometry"), setting
         assert ("odometry, your position" in system) == (setting == "odometry")
+
+
+def test_farthest_shows_the_exit_that_clear_hides():
+    """House 47, under the exit and facing it, off-centre: the minimum of the
+    front sector hits the jamb, the maximum sees out."""
+    r = sim.SimRobot(sim.make_house(47), 47)
+    r.x, r.y, r.heading = 3.98, 5.13, 84.0
+    mins = r.scan()
+    assert mins[0] is not None and mins[0] < 1.0
+    assert r.last_max[0] is None
+    assert "front clear" in sim.format_scan(mins, True, r.last_max)
+    assert "farthest >8 m" in sim.format_scan(mins, True, r.last_max)
+    assert len(r.last_rays) == 72
+
+
+def test_minimums_unchanged_by_the_maximums():
+    """The wall follower and older runs read only the minimums: same stream, same numbers."""
+    import random
+    r = sim.SimRobot(sim.make_house(5), 5)
+    r.move(0.5)
+    r.turn(30)
+    r.max_rng = random.Random("something else")
+    a = r.scan()
+    r2 = sim.SimRobot(sim.make_house(5), 5)
+    r2.move(0.5)
+    r2.turn(30)
+    assert r2.scan() == a

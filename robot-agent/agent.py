@@ -54,16 +54,18 @@ SYSTEM = """You are the brain of a small round robot (radius 0.17 m, the size of
 iRobot Create 3). You are somewhere inside a house. Your job: get out of the house.
 
 What you have:
-- A 2D lidar. Every action returns a fresh scan: the shortest distance to \
-anything in 8 directions around you (front, front-left, left, back-left, back, \
-back-right, right, front-right). Each direction covers a 45-degree slice. \
-Each reading is the free space between your body and the nearest thing in that \
-slice: you can drive forward about the front reading before you touch \
-something (keep a margin: your sides can still catch a corner). Readings are \
-a little noisy.
-- The house is small: from anywhere inside it, every reading is under 8 m. A \
-reading of ">8 m" means nothing within 8 m in that direction: open space beyond \
-the house. That is the only sign of the exit.
+- A 2D lidar. Every action returns a fresh scan of 8 directions around you \
+(front, front-left, left, back-left, back, back-right, right, front-right). \
+Each direction covers a 45-degree slice and reports two numbers, both measured \
+from your body: "clear" is the free space before the nearest thing in that \
+slice (you can drive forward about the front "clear" before you touch \
+something; keep a margin, your sides can still catch a corner), and \
+"farthest" is the longest distance seen in that slice. When "farthest" is much \
+larger than "clear", part of the slice sees through a gap, such as a doorway. \
+Readings are a little noisy.
+- The house is small: from anywhere inside it, every distance is under 8 m. A \
+"farthest" of ">8 m" means part of that slice sees open space beyond the \
+house, through the exit. That is the only sign of the exit.
 - move(meters): drive straight ahead (negative drives backwards, at most 1 m). \
 At most 2 m per command. If you bump into something you stop there, and the \
 result says so.
@@ -105,6 +107,9 @@ POSITION_TEXT = {
 NO_POSITION = ("- No map, no GPS, no odometry: you never learn your position. You only "
                "know what the scans tell you.")
 SCAN_CLEARANCE = True   # report free space from the body (the pilot runs used centre distances)
+# Each sector reports "clear" (its minimum) and "farthest" (its maximum). The
+# house-47 runs before this had only the minimum, which hides doorways and the
+# exit: from inside the exit's room, the exit read ">8 m" from only 7% of poses.
 
 TASK = "Get out of the house."
 
@@ -194,7 +199,7 @@ def describe(result, steps_used, max_steps, odometry=None):
     if result.get("clamped"):
         text += " (The command was outside the allowed range and was clamped.)"
     out = (f"{text} Actions used: {steps_used} of {max_steps}.\n"
-           f"Scan: {sim.format_scan(result['scan'], SCAN_CLEARANCE)}")
+           f"Scan: {sim.format_scan(result['scan'], SCAN_CLEARANCE, result.get('scan_max'))}")
     if odometry is not None:
         x, y, h = odometry
         out += f"\nOdometry: x {x:.2f} m, y {y:.2f} m, heading {h:.0f} degrees."
@@ -367,7 +372,8 @@ class FakeClient:
         if not scans:
             raise ValueError("fake model: no scan found in the prompt")
         scan = [None if v == ">8 m" else float(v.split()[0])
-                for v in re.findall(r"(?:^|, )[a-z-]+ (>8 m|[0-9.]+ m)", scans[-1])]
+                for v in re.findall(r"(?:^|; )[a-z-]+ clear (>8 m|[0-9.]+ m)" if "clear" in scans[-1]
+                                    else r"(?:^|, )[a-z-]+ (>8 m|[0-9.]+ m)", scans[-1])]
         assert len(scan) == 8, scans[-1]
         if SCAN_CLEARANCE:   # the rule works in distances from the centre
             scan = [None if d is None else d + sim.ROBOT_RADIUS for d in scan]
@@ -399,8 +405,9 @@ def run_agent(client, setting, house, noise_seed, max_steps, model="haiku",
          "date": time.strftime("%Y-%m-%d %H:%M:%S %z"), "fake": fake})
 
     start_scan = robot.scan()
+    start_rays = robot.last_rays
     # The run so far, as the model will read it (see "memory" above).
-    start_text = f"Start. Scan: {sim.format_scan(start_scan, SCAN_CLEARANCE)}"
+    start_text = f"Start. Scan: {sim.format_scan(start_scan, SCAN_CLEARANCE, robot.last_max)}"
     if setting == "odometry":
         start_text += "\nOdometry: x 0.00 m, y 0.00 m, heading 0 degrees."
     entries = [{"text": start_text, "robot_action": 0}]
@@ -489,6 +496,7 @@ def run_agent(client, setting, house, noise_seed, max_steps, model="haiku",
                     replay_steps.append({"i": steps, "action": name, "requested": value,
                                          "done": r["done"], "bump": bump,
                                          "pose": robot.pose(), "scan": r["scan"],
+                                         "scan_max": r["scan_max"], "rays": r["rays"],
                                          "say": say_text, "notes": notes})
                 elif name == "done":
                     outcome = "success" if robot.outside else "done_inside"
@@ -535,7 +543,7 @@ def run_agent(client, setting, house, noise_seed, max_steps, model="haiku",
     log({"type": "end", **row})
     replay = {"setting": setting, "model": model_id, "outcome": outcome,
               "house": house.to_json(), "start": list(house.start),
-              "start_scan": start_scan, "steps": replay_steps,
+              "start_scan": start_scan, "start_rays": start_rays, "steps": replay_steps,
               "final_notes": notes, "max_steps": max_steps}
     return row, replay
 
@@ -548,11 +556,13 @@ def run_wall_follower(house, noise_seed, max_steps, log=None):
          "house_seed": house.seed, "noise_seed": noise_seed, "max_steps": max_steps,
          "house": house.to_json(), "date": time.strftime("%Y-%m-%d %H:%M:%S %z")})
     start_scan = robot.scan()
+    robot_start_rays = robot.last_rays
     steps_log = []
 
     def on_step(i, kind, amount, r):
         steps_log.append({"i": i + 1, "action": kind, "requested": amount, "done": r["done"],
                           "bump": r["bump"], "pose": robot.pose(), "scan": r["scan"],
+                          "scan_max": r["scan_max"], "rays": r["rays"],
                           "say": "", "notes": ""})
         log({"type": "tool", "name": kind, "input": amount, "pose": robot.pose(),
              "bump": r["bump"], "steps": i + 1})
@@ -569,7 +579,8 @@ def run_wall_follower(house, noise_seed, max_steps, log=None):
            "seconds": round(time.time() - t0, 1), "error": None}
     log({"type": "end", **row})
     replay = {"setting": "wall", "model": "none", "outcome": outcome, "house": house.to_json(),
-              "start": list(house.start), "start_scan": start_scan, "steps": steps_log,
+              "start": list(house.start), "start_scan": start_scan,
+              "start_rays": robot_start_rays, "steps": steps_log,
               "final_notes": "", "max_steps": max_steps}
     return row, replay
 

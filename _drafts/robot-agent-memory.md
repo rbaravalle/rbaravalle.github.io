@@ -1,5 +1,5 @@
 ---
-title: "How much does a robot need to remember? An agent with no map"
+title: "How much does a robotic agent need to remember?"
 # Fixed address for the local preview. Remove when publishing (move to _posts/).
 permalink: /drafts/robot-agent-memory/
 ---
@@ -12,6 +12,9 @@ Claude Haiku 5.5 at medium effort:
   round 2:  house 47, 1 run per setting (clearance, odometry), $0.38
   round 3:  house 47, 1 run per setting (clear + farthest), $0.07
 -->
+
+**There is no risk that your life gets boring if you have Conrad around.
+"I am going to have a body!" - exclaims Conrad. People from Robotics SA is going to put me in the most advanced robot yet.**
 
 In the [last post]({% post_url 2026-11-18-a-tiny-agent %}) I opened the box:
 a coding agent is a loop around a model, and what makes it work is the
@@ -29,12 +32,12 @@ and a limited memory. Its job: get out of a house.
 ## I was concerned about costs and context size
 
 When a robot builds a map, it is answering a question: *what do I need to
-remember about this space?* SLAM's answer is written by hand: a metric map,
+remember about this space, in order to perform tasks on it?* SLAM's answer is written by hand: a metric map,
 plus an estimate of where I am on it. An agent with no map has to come up
 with its own answer, for example by writing notes to itself. Do those notes
 turn into a kind of map in words?
 
-Memory costs real money in these exercises. Everything the agent remembers is sent to
+Memory costs real money in these exercises (I don't have a powerful machine to run one locally). Everything the agent remembers is sent to
 the model again on every call: more memory means more tokens, more latency,
 more context. So the question for this post was:
 
@@ -65,7 +68,7 @@ this post is pure software. All the code is in
   decision in this post, and I got it wrong twice. The house is small, so
   from inside it nothing is farther than 8 m. A reading of `>8 m` means open
   space beyond the house: that is the only hint of where the exit is.
-* **No odometry.** The real Create 3 counts its wheel turns, so it always
+* **No odometry, initially.** The real Create 3 counts its wheel turns, so it always
   roughly knows where it is relative to where it started. That is a kind of
   memory you get for free, and I left it out on purpose, to keep the memory
   question clean. (It comes back in round 2.)
@@ -75,7 +78,7 @@ this post is pure software. All the code is in
 
 The agent loop is the one from post 2, with the shell tools swapped for
 `move` and `turn`. Same model: Claude Haiku 5.5, the small cheap one, at its
-default ("medium") effort. Here is the whole system in one picture:
+default ("medium") effort.
 
 <figure style="margin: 1.5em 0;">
   <img src="{{ '/assets/robot-agent/img/system.svg' | relative_url }}"
@@ -163,8 +166,8 @@ cache, against a third to 40% for the window.
 
 ## The baseline: keep the wall on your right
 
-To compare against, the oldest trick for mazes: keep one hand on the wall and
-walk. No model, no memory, about 30 lines of Python reading the same scan.
+To compare against a trivial strategy, the oldest trick for mazes: keep one hand on the wall and
+walk. Just 30 lines of Python reading the same scan.
 
 Because every wall in these houses is connected to the outer wall, following
 the wall on your right is *guaranteed* to take you out, eventually. It is also slow: it gets out of all of 200 test houses, but needs a median of 170 actions, because it works in small

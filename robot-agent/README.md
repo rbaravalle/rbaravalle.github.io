@@ -15,6 +15,10 @@ and no odometry: only an 8-sector lidar scan after each action.
 
 ## The four memory settings
 
+Every scan reports clearance: the free space between the robot's body and the
+nearest thing (the pilot runs reported distance from the centre, and the model
+kept driving its body into walls).
+
 Every call is one fresh message, built from what the robot remembers: a list of
 entries like `Step 12. You said: "..." You called move(0.5). Result: Moved 0.50 m. Scan: ...`.
 
@@ -22,6 +26,7 @@ entries like `Step 12. You said: "..." You called move(0.5). Result: Moved 0.50 
 - **window**: the last 10 actions
 - **notebook**: the last 10 actions, plus a 500-character notebook it writes with `write_note` (and can read with `read_notes`); the notebook is also shown at the top of every message
 - **full**: everything since the start
+- **odometry**: everything since the start, plus wheel odometry after every action (position relative to the start, with a little drift). It tests whether knowing *where* each scan was taken lets the robot recognise places
 
 The model's own thinking from earlier calls is never sent back, in any setting.
 What it remembers of its reasoning is what it said out loud.

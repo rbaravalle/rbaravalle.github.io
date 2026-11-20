@@ -9,10 +9,12 @@ memory. There are four settings:
   goldfish  the latest scan and the last action only
   window    the last 10 actions and their results
   notebook  the window, plus a 500-character notebook it writes itself
-  full      everything since the start (the normal agent loop)
+  full      everything since the start
+  odometry  everything since the start, plus wheel odometry (where the
+            robot is relative to its start) after every action
 
-There is no map, no SLAM, no planner and no odometry: only the lidar scan that
-each action returns.
+There is no map, no SLAM and no planner: only the lidar scan that each action
+returns (and, in the odometry setting only, where the wheels say it is).
 
 Prompt caching is on. The stable parts come first (tools, system prompt, then
 the notebook), so they can be read from the cache. Full history only ever
@@ -44,7 +46,7 @@ MODELS = {
 CACHE_WRITE = 1.25     # x the input price, 5-minute cache
 CACHE_READ = 0.10      # x the input price (Haiku 5.5)
 
-SETTINGS = ["goldfish", "window", "notebook", "full"]
+SETTINGS = ["goldfish", "window", "notebook", "full", "odometry"]
 WINDOW = 10            # actions kept by "window" and "notebook"
 NOTE_LIMIT = 500       # characters in the notebook
 
@@ -55,7 +57,10 @@ What you have:
 - A 2D lidar. Every action returns a fresh scan: the shortest distance to \
 anything in 8 directions around you (front, front-left, left, back-left, back, \
 back-right, right, front-right). Each direction covers a 45-degree slice. \
-Distances are measured from your centre and are a little noisy.
+Each reading is the free space between your body and the nearest thing in that \
+slice: you can drive forward about the front reading before you touch \
+something (keep a margin: your sides can still catch a corner). Readings are \
+a little noisy.
 - The house is small: from anywhere inside it, every reading is under 8 m. A \
 reading of ">8 m" means nothing within 8 m in that direction: open space beyond \
 the house. That is the only sign of the exit.
@@ -64,8 +69,7 @@ At most 2 m per command. If you bump into something you stop there, and the \
 result says so.
 - turn(degrees): turn in place. Positive turns left (counterclockwise), negative \
 turns right. From -180 to 180.
-- No map, no GPS, no odometry: you never learn your position. You only know \
-what the scans tell you.
+{position}
 
 {memory}
 
@@ -88,7 +92,19 @@ MEMORY_TEXT = {
                 "read_notes() shows it. The current notebook is also shown at the "
                 "start of every request.",
     "full": "Your memory: you see everything that happened since the start.",
+    "odometry": "Your memory: you see everything that happened since the start.",
 }
+
+POSITION_TEXT = {
+    "odometry": "- No map and no GPS. But your wheels count how far they turned: after "
+                "every action you get your odometry, your position relative to where "
+                "you started (x metres forward and y metres to the left of your start "
+                "pose, and your heading in degrees; at the start all three are 0). It "
+                "drifts a little with every action.",
+}
+NO_POSITION = ("- No map, no GPS, no odometry: you never learn your position. You only "
+               "know what the scans tell you.")
+SCAN_CLEARANCE = True   # report free space from the body (the pilot runs used centre distances)
 
 TASK = "Get out of the house."
 
@@ -145,7 +161,8 @@ def tools_for(setting):
 
 
 def system_for(setting, max_steps):
-    return SYSTEM.format(memory=MEMORY_TEXT[setting], max_steps=max_steps)
+    return SYSTEM.format(memory=MEMORY_TEXT[setting], max_steps=max_steps,
+                         position=POSITION_TEXT.get(setting, NO_POSITION))
 
 
 # ---------------------------------------------------------------- helpers
@@ -163,7 +180,7 @@ def to_jsonable(x):
     return x
 
 
-def describe(result, steps_used, max_steps):
+def describe(result, steps_used, max_steps, odometry=None):
     """A robot action's result, as the model reads it."""
     if result["action"] == "move":
         req, done = result["requested"], result["done"]
@@ -176,8 +193,12 @@ def describe(result, steps_used, max_steps):
         text = f"Turned {abs(d):.0f} degrees {'left' if d >= 0 else 'right'}."
     if result.get("clamped"):
         text += " (The command was outside the allowed range and was clamped.)"
-    return (f"{text} Actions used: {steps_used} of {max_steps}.\n"
-            f"Scan: {sim.format_scan(result['scan'])}")
+    out = (f"{text} Actions used: {steps_used} of {max_steps}.\n"
+           f"Scan: {sim.format_scan(result['scan'], SCAN_CLEARANCE)}")
+    if odometry is not None:
+        x, y, h = odometry
+        out += f"\nOdometry: x {x:.2f} m, y {y:.2f} m, heading {h:.0f} degrees."
+    return out
 
 
 def price(model, u):
@@ -218,7 +239,7 @@ def usage_dict(u):
 
 def kept_entries(setting, entries):
     """Which entries of the run this setting remembers."""
-    if setting == "full":
+    if setting in ("full", "odometry"):
         return entries
     window = 1 if setting == "goldfish" else WINDOW
     cut, actions = len(entries), 0
@@ -250,7 +271,7 @@ def add_cache_marks(setting, messages):
     blocks = [dict(b) for b in msg["content"]]
     # full: everything so far, since the next call only appends.
     # the others: the task (and notebook); the entries after it change every call.
-    i = len(blocks) - 1 if setting == "full" else 0
+    i = len(blocks) - 1 if setting in ("full", "odometry") else 0
     blocks[i] = dict(blocks[i], cache_control={"type": "ephemeral"})
     return [{"role": "user", "content": blocks}]
 
@@ -348,6 +369,8 @@ class FakeClient:
         scan = [None if v == ">8 m" else float(v.split()[0])
                 for v in re.findall(r"(?:^|, )[a-z-]+ (>8 m|[0-9.]+ m)", scans[-1])]
         assert len(scan) == 8, scans[-1]
+        if SCAN_CLEARANCE:   # the rule works in distances from the centre
+            scan = [None if d is None else d + sim.ROBOT_RADIUS for d in scan]
         last = self.last + ("BUMP:" in text,) if self.last else None
         kind, amount = wall_follower.decide(scan, last)
         self.last = (kind, amount)
@@ -372,12 +395,15 @@ def run_agent(client, setting, house, noise_seed, max_steps, model="haiku",
     system = [{"type": "text", "text": system_text, "cache_control": {"type": "ephemeral"}}]
     log({"type": "header", "setting": setting, "model": model_id, "effort": effort,
          "house_seed": house.seed, "noise_seed": noise_seed, "max_steps": max_steps,
-         "system": system_text, "tools": tools, "house": house.to_json(),
+         "scan_clearance": SCAN_CLEARANCE, "system": system_text, "tools": tools, "house": house.to_json(),
          "date": time.strftime("%Y-%m-%d %H:%M:%S %z"), "fake": fake})
 
     start_scan = robot.scan()
     # The run so far, as the model will read it (see "memory" above).
-    entries = [{"text": f"Start. Scan: {sim.format_scan(start_scan)}", "robot_action": 0}]
+    start_text = f"Start. Scan: {sim.format_scan(start_scan, SCAN_CLEARANCE)}"
+    if setting == "odometry":
+        start_text += "\nOdometry: x 0.00 m, y 0.00 m, heading 0 degrees."
+    entries = [{"text": start_text, "robot_action": 0}]
     notes = ""
     steps, calls, nudges, note_writes, note_reads = 0, 0, 0, 0, 0
     in_a_row = 0          # replies without a tool call, in a row
@@ -458,7 +484,8 @@ def run_agent(client, setting, house, noise_seed, max_steps, model="haiku",
                     steps += 1
                     robot_action = 1
                     bump = r["bump"]
-                    output = describe(r, steps, max_steps)
+                    output = describe(r, steps, max_steps,
+                                      robot.odometry() if setting == "odometry" else None)
                     replay_steps.append({"i": steps, "action": name, "requested": value,
                                          "done": r["done"], "bump": bump,
                                          "pose": robot.pose(), "scan": r["scan"],

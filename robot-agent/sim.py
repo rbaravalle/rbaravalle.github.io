@@ -30,6 +30,8 @@ RAYS_PER_SECTOR = 9       # rays at -20, -15, ..., +20 degrees around each secto
 MAX_MOVE = 2.0            # m per move command, forwards
 MAX_BACK = 1.0            # m per move command, backwards
 MOVE_STEP = 0.01          # m, collision check resolution
+ODO_DIST_NOISE = 0.02     # odometry: 2% error on each move
+ODO_TURN_NOISE = 1.0      # odometry: 1 degree error on each turn
 WALL_HALF = 0.04          # m, half the wall thickness (walls are 8 cm thick)
 
 
@@ -297,11 +299,18 @@ class SimRobot(Robot):
         self.house = house
         self.x, self.y, self.heading = house.start     # heading in degrees, CCW from +x
         self.rng = random.Random(f"noise-{noise_seed}")
+        self.odo_rng = random.Random(f"odometry-{noise_seed}")   # its own stream: the lidar noise stays the same
+        self.odo = [0.0, 0.0, 0.0]     # wheel odometry: x forward and y left of the start pose, heading deg
         self.bumps = 0
 
     @property
     def outside(self):
         return self.house.is_outside(self.x, self.y)
+
+    def odometry(self):
+        """Where the wheels say the robot is, relative to its start: x forward,
+        y left (m), heading (deg). It drifts. The real Create 3 reports this too."""
+        return (round(self.odo[0], 2), round(self.odo[1], 2), round(self.odo[2]))
 
     def pose(self):
         """Ground truth, for the simulator and the replay only. The agent never sees this."""
@@ -336,6 +345,11 @@ class SimRobot(Robot):
             self.x, self.y, moved = nx, ny, moved + step
         if bump:
             self.bumps += 1
+        # Odometry integrates what the wheels did, with a little drift.
+        d = sign * moved * (1 + self.odo_rng.gauss(0, ODO_DIST_NOISE))
+        oh = math.radians(self.odo[2])
+        self.odo[0] += d * math.cos(oh)
+        self.odo[1] += d * math.sin(oh)
         return {"action": "move", "requested": req, "done": round(sign * moved, 2),
                 "clamped": m != req, "bump": bump, "scan": self.scan()}
 
@@ -343,13 +357,17 @@ class SimRobot(Robot):
         req = float(degrees)
         d = max(-180.0, min(180.0, req))
         self.heading = (self.heading + d + 180.0) % 360.0 - 180.0
+        self.odo[2] = (self.odo[2] + d + self.odo_rng.gauss(0, ODO_TURN_NOISE) + 180.0) % 360.0 - 180.0
         return {"action": "turn", "requested": req, "done": round(d, 1),
                 "clamped": d != req, "bump": False, "scan": self.scan()}
 
 
-def format_scan(scan):
-    """The lidar as the model reads it."""
-    return ", ".join(f"{name} {'>8 m' if d is None else f'{d:.2f} m'}"
+def format_scan(scan, clearance=False):
+    """The lidar as the model reads it. With clearance=True, each reading is the
+    free space between the robot's body and the nearest thing (distance from
+    the centre minus the radius), which is what matters for driving."""
+    off = ROBOT_RADIUS if clearance else 0.0
+    return ", ".join(f"{name} {'>8 m' if d is None else f'{max(0.0, d - off):.2f} m'}"
                      for name, d in zip(SECTORS, scan))
 
 

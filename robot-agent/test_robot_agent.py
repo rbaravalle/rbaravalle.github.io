@@ -155,7 +155,7 @@ def test_cache_marks():
     for setting in agent.SETTINGS:
         m = agent.add_cache_marks(setting, agent.build_messages(setting, _entries(15), "n"))
         marked = [i for i, b in enumerate(m[0]["content"]) if "cache_control" in b]
-        assert marked == ([len(m[0]["content"]) - 1] if setting == "full" else [0])
+        assert marked == ([len(m[0]["content"]) - 1] if setting in ("full", "odometry") else [0])
     raw = agent.build_messages("full", _entries(3), "")
     agent.add_cache_marks("full", raw)
     assert "cache_control" not in json.dumps(raw)    # marking never changes the original
@@ -300,3 +300,30 @@ def test_start_is_not_in_the_exit_room(seed):
     mx, my = (h.exit[0] + h.exit[2]) / 2, (h.exit[1] + h.exit[3]) / 2
     room = next(r for r in h.rooms if r[0] <= x <= r[2] and r[1] <= y <= r[3])
     assert not (room[0] - 1e-6 <= mx <= room[2] + 1e-6 and room[1] - 1e-6 <= my <= room[3] + 1e-6)
+
+
+def test_odometry_follows_the_wheels():
+    r = sim.SimRobot(sim.make_house(47), 47)
+    assert r.odometry() == (0.0, 0.0, 0)
+    r.move(1.0)
+    r.turn(90)
+    r.move(0.5)
+    x, y, h = r.odometry()
+    assert abs(x - 1.0) < 0.1 and abs(y - 0.5) < 0.1 and abs(h - 90) < 5
+
+
+def test_clearance_is_distance_minus_radius():
+    scan = [1.0, None, 0.5, 2.0, 0.1, 3.0, 1.17, 0.4]
+    t = sim.format_scan(scan, clearance=True)
+    assert t.startswith("front 0.83 m, front-left >8 m") and "back 0.00 m" in t and "right 1.00 m" in t
+
+
+def test_only_the_odometry_setting_sees_odometry():
+    for setting in agent.SETTINGS:
+        recs = []
+        agent.run_agent(agent.FakeClient(3), setting, sim.make_house(47), 47, 12,
+                        fake=True, log=recs.append)
+        sent = json.dumps([r["request"] for r in recs if r["type"] == "call"])
+        system = recs[0]["system"]
+        assert ("Odometry:" in sent) == (setting == "odometry"), setting
+        assert ("odometry, your position" in system) == (setting == "odometry")

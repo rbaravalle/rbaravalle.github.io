@@ -104,6 +104,24 @@ hit anything, because the robot is round. Walls are 8 cm thick; with
 zero-thickness walls, a wall seen exactly end-on could slip between two lidar
 rays: invisible, but solid.
 
+### When is the model called?
+
+Once per action, and only between actions. The model asks for one action,
+say `move(1.5)`. The simulator then carries out the whole move on its own,
+centimetre by centimetre, checking for contact, without asking the model
+anything. Only when the move is finished, or stopped by a bump, does the loop
+send the next request, with the result and a fresh scan. A 2 m move and a 10
+cm move each cost exactly one call, and the model never sees what happens in
+between.
+
+In the runs in this post that was exactly one call per action (the notebook
+added one now and then, to write a note). A call took about 2 seconds (median
+1.8 s; one in ten took more than 3 s), and all that time the robot stands
+still. On the real Create 3 it would be the same: drive, stop, think for two
+seconds, drive again. That is slow for a robot, and it is one reason a real
+system would keep fast reflexes, like stopping on the bumper, on the robot
+itself, and ask the model only for the bigger decisions.
+
 ## Four memory settings to compare
 
 The robot sees its past as a short log, one entry per action:
@@ -483,6 +501,15 @@ So this round doesn't show that raw data is worse. It shows that my summary
 was doing real work: it turned 72 numbers into the two things that matter
 for driving (can I fit, is there a gap) before the model ever saw them. That
 is exactly the kind of hand-written processing a robotics stack is full of.
+
+## Round 7: all 72 rays, read properly
+
+TODO: house 47, all 72 rays, one run per setting, with a corrected hint. The
+prompt no longer says to trust the ray straight ahead. It now says that the
+body is 0.34 m wide, that the smallest reading between 330 and 30 degrees is
+how far it can drive, and that a doorway is a group of neighbouring rays much
+longer than the ones beside them (at 1 m, 5 degrees is about 9 cm). The same
+data as round 6; only the explanation changes.
 
 ## What it costs
 

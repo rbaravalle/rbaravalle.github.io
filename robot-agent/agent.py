@@ -88,9 +88,15 @@ house, through the exit. That is the only sign of the exit.
 degrees, as "angle:distance" pairs. Angles are counterclockwise from straight \
 ahead: 0 is in front of you, 90 to your left, 180 behind, 270 to your right. \
 Each distance is the free space between your body and the nearest thing along \
-that ray (you can drive forward about the distance at 0 before you touch \
-something; keep a margin, your sides can still catch a corner). Readings are \
-a little noisy.
+that ray. Readings are a little noisy.
+- Your body is 0.34 m wide, so a single ray does not tell you how far you can \
+drive: something just beside the ray at 0 can still hit your side. Before \
+driving forward, look at every ray from 330 through 0 to 30: the smallest of \
+them is about how far you can drive straight ahead (keep a margin).
+- A doorway or other gap shows up as several neighbouring rays that are much \
+longer than the rays on either side of them. To go through it, turn to face \
+the middle of that group of long rays, and check that it is wide enough for \
+you: at a distance of 1 m, 5 degrees is about 9 cm.
 - The house is small: from anywhere inside it, every distance is under 8 m. A \
 ray reading ">8" sees open space beyond the house, through the exit. That is \
 the only sign of the exit.

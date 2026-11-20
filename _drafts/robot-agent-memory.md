@@ -15,20 +15,18 @@ Claude Haiku 5.5 at medium effort:
 
 In the [last post]({% post_url 2026-11-18-a-tiny-agent %}) I opened the box:
 a coding agent is a loop around a model, and what makes it work is the
-feedback. This time I wanted to point that loop at the thing I actually do for
-a living: robots.
+feedback. This time I wanted to apply an agent to a robotics task, something I undertand well.
 
 Here is the question behind the next few posts. Classical robot navigation
 (SLAM, path planners, hand-written behaviours) is intelligence we wrote by
 hand, because machines had none of their own. Now they have some. **Can an
 agent replace that hand-written stack?** I don't expect one blog post to
-answer that. So I'm taking it one small piece at a time, and this is the first
-piece.
+answer that. I just want to understand these systems in a simulated example that I can later extend.
 
-The agent gets **no map, no SLAM and no planner**. Only a sensor, two actions,
+The agent gets **no map, no SLAM and no planner**. Only a sensor (simulating a Lidar), two actions,
 and a limited memory. Its job: get out of a house.
 
-## Memory is the SLAM question
+## I was concerned about costs and context size
 
 When a robot builds a map, it is answering a question: *what do I need to
 remember about this space?* SLAM's answer is written by hand: a metric map,
@@ -36,14 +34,14 @@ plus an estimate of where I am on it. An agent with no map has to come up
 with its own answer, for example by writing notes to itself. Do those notes
 turn into a kind of map in words?
 
-Memory is also what costs money. Everything the agent remembers is sent to
+Memory costs real money in these exercises. Everything the agent remembers is sent to
 the model again on every call: more memory means more tokens, more latency,
 more context. So the question for this post was:
 
 **Without a map, how much memory does a robot agent need, what does it choose
 to remember, and what does that memory cost?**
 
-I'll spoil one thing: the answer I got is mostly about something else. What
+The answer I got is mostly about something else. What
 the robot could *see* mattered more than what it could remember, and what it
 could see was my decision, not the model's.
 
@@ -106,7 +104,7 @@ hit anything, because the robot is round. Walls are 8 cm thick; with
 zero-thickness walls, a wall seen exactly end-on could slip between two lidar
 rays: invisible, but solid.
 
-## Four memories
+## Four memory settings to compare
 
 The robot sees its past as a short log, one entry per action:
 
@@ -151,13 +149,10 @@ To compare against, the oldest trick for mazes: keep one hand on the wall and
 walk. No model, no memory, about 30 lines of Python reading the same scan.
 
 Because every wall in these houses is connected to the outer wall, following
-the wall on your right is *guaranteed* to take you out, eventually. I want to
-say that up front, so the numbers below don't present it as a discovery. It
-isn't smart, it is just certain. It is also slow: it gets out of all of 200
-test houses, but needs a median of 170 actions, because it works in small
+the wall on your right is *guaranteed* to take you out, eventually. It is also slow: it gets out of all of 200 test houses, but needs a median of 170 actions, because it works in small
 steps.
 
-The agent should be able to beat it: it can drive 2 metres at a time, and it
+An "intelligent" agent should be able to beat it: it can drive 2 metres at a time, and it
 can, in principle, think.
 
 ## The pilot: my first mistake
@@ -226,8 +221,7 @@ have been here before"*. Two scans from the same doorway are never quite the
 same: a few centimetres of position, a few degrees of heading, a little
 noise, and eight numbers all change. Matching what you see now to what you
 saw before, without knowing where you are, is called *place recognition* (or
-*loop closure*). It is one of the hard parts of SLAM, and it is exactly the
-part we write by hand.
+*loop closure*). It is one of the hard parts of SLAM.
 
 **The notebook held strategy, not a map.** Given 500 characters it chooses
 itself, the robot wrote two to four notes per run, and they were lessons and
@@ -287,7 +281,7 @@ from the exit, right below it, facing it. The front read **0.34 m**.
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v2-odometry-h047-r0.json' | relative_url }}"
      data-labels="Odometry (round 2)"></div>
 
-## My second mistake: the sensor hid the exit
+## My Mistake: the sensor hid the exit
 
 Each of the 8 directions reported the *minimum* of its slice: the closest
 thing in 45 degrees. That is what you want for not hitting things, and it is
@@ -295,7 +289,7 @@ what my plan said. But a gap only shows up in a minimum if the *whole* slice
 fits through it. At action 39, some rays went out through the exit. The door
 jamb, in the same slice, set the reading.
 
-So I measured it. From random poses inside the exit's room of house 47, the
+From random poses inside the exit's room of house 47, the
 exit read `>8 m` in **7%** of the scans, and in 16% within 1.5 m of it. If each
 direction had also reported its farthest ray, it would have been 100%.
 Doorways hide in the same way. The prompt told the robot that `>8 m` was the
@@ -326,7 +320,7 @@ what hid the exit. Letting the model see everything, and find its own way to
 read it, is closer to the spirit of the question this series asks. So the
 code can now do both (`--scan rays`).
 
-## Round 3: let it see the gaps
+## Round 3: success, let it see the gaps
 
 One change: every direction reports two numbers.
 
@@ -418,6 +412,8 @@ Everything in this post, 50 agent runs in four rounds, cost **$2.38**.
 
 ## What I take away
 
+
+I wanted to try an AI agent on a simple robotic task for the first time, as a first step.
 I set out to ask how much a robot agent needs to remember, and I spent most
 of the post learning what it needs to *see*. The model wasn't the weak link I
 expected. Twice, the weak link was the interface I wrote for it: a distance

@@ -299,6 +299,7 @@ class SimRobot(Robot):
         self.house = house
         self.x, self.y, self.heading = house.start     # heading in degrees, CCW from +x
         self.rng = random.Random(f"noise-{noise_seed}")
+        self.ray_rng = random.Random(f"noise-rays-{noise_seed}")   # own stream, for the 72-ray format
         self.max_rng = random.Random(f"noise-max-{noise_seed}")   # own stream: the minimums stay as before
         self.odo_rng = random.Random(f"odometry-{noise_seed}")   # its own stream: the lidar noise stays the same
         self.odo = [0.0, 0.0, 0.0]     # wheel odometry: x forward and y left of the start pose, heading deg
@@ -341,6 +342,8 @@ class SimRobot(Robot):
             maxes.append(None if m > LIDAR_RANGE
                          else round(max(0.0, m + self.max_rng.gauss(0, LIDAR_NOISE)), 2))
         self.last_max, self.last_rays = maxes, rays
+        self.last_rays_noisy = [None if d is None else round(max(0.0, d + self.ray_rng.gauss(0, LIDAR_NOISE)), 2)
+                                for d in rays]
         return out
 
     def move(self, meters):
@@ -366,7 +369,8 @@ class SimRobot(Robot):
         self.odo[1] += d * math.sin(oh)
         return {"action": "move", "requested": req, "done": round(sign * moved, 2),
                 "clamped": m != req, "bump": bump, "scan": self.scan(),
-                "scan_max": self.last_max, "rays": self.last_rays}
+                "scan_max": self.last_max, "rays": self.last_rays,
+                "rays_noisy": self.last_rays_noisy}
 
     def turn(self, degrees):
         req = float(degrees)
@@ -375,7 +379,8 @@ class SimRobot(Robot):
         self.odo[2] = (self.odo[2] + d + self.odo_rng.gauss(0, ODO_TURN_NOISE) + 180.0) % 360.0 - 180.0
         return {"action": "turn", "requested": req, "done": round(d, 1),
                 "clamped": d != req, "bump": False, "scan": self.scan(),
-                "scan_max": self.last_max, "rays": self.last_rays}
+                "scan_max": self.last_max, "rays": self.last_rays,
+                "rays_noisy": self.last_rays_noisy}
 
 
 def format_scan(scan, clearance=False, scan_max=None):
@@ -392,6 +397,21 @@ def format_scan(scan, clearance=False, scan_max=None):
         return ", ".join(f"{name} {m(d)}" for name, d in zip(SECTORS, scan))
     return "; ".join(f"{name} clear {m(d)}, farthest {m(f)}"
                      for name, d, f in zip(SECTORS, scan, scan_max))
+
+
+def ray_angle(k):
+    """Angle of ray k, in degrees counterclockwise from straight ahead (0..355)."""
+    return ((k // RAYS_PER_SECTOR) * 45 + (k % RAYS_PER_SECTOR) * 5 - 20) % 360
+
+
+def format_rays(rays, clearance=True):
+    """All 72 rays as the model reads them: "angle:distance", from straight
+    ahead, counterclockwise, every 5 degrees. Distances are clearance from the
+    body when clearance=True."""
+    off = ROBOT_RADIUS if clearance else 0.0
+    order = sorted(range(len(rays)), key=ray_angle)
+    return " ".join(f"{ray_angle(k)}:" + (">8" if rays[k] is None else f"{max(0.0, rays[k] - off):.2f}")
+                    for k in order)
 
 
 if __name__ == "__main__":

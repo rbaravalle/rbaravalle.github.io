@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 790" role="img" aria-labelledby="t d" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <title id="t">The robot agent system</title>
+  <desc id="d">On your computer: the simulator (house, physics, lidar) and the agent loop, connected by move/turn and result+scan. In the cloud: the model and the prompt cache. Every step the agent sends a request with the tools, system prompt, task and memory log, and gets back one sentence and one tool call. With full history each request repeats the previous one plus one new entry, so all but the newest entry is read from the cache.</desc>
+  <defs>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7fb4ff"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c3e88d"/></marker>
+    <marker id="a-yellow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ffcb6b"/></marker>
+    <marker id="a-grey" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#aeb6c8"/></marker>
+    <style>
+      .region { fill: #8a93a6; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+      .h { fill: #d6dae4; font-size: 15px; font-weight: 600; }
+      .t { fill: #d6dae4; font-size: 12.5px; }
+      .small { fill: #8a93a6; font-size: 11.5px; }
+      .lab { fill: #aeb6c8; font-size: 12px; font-style: italic; }
+      .blk { fill: #d6dae4; font-size: 10.5px; }
+    </style>
+  </defs>
+  <rect width="760" height="790" fill="#1b1f2a"/>
+    <rect x="12" y="12" width="402" height="482" rx="16" fill="none" stroke="#343b4d" stroke-width="1.5" stroke-dasharray="7 6"/>
+  <text x="28" y="36" class="region" text-anchor="start">ON YOUR COMPUTER</text>
+  <text x="28" y="52" class="small" text-anchor="start">(on the real robot: its Raspberry Pi)</text>
+  <rect x="434" y="12" width="314" height="482" rx="16" fill="none" stroke="#343b4d" stroke-width="1.5" stroke-dasharray="7 6"/>
+  <text x="450" y="36" class="region" text-anchor="start">IN THE CLOUD</text>
+  <text x="450" y="52" class="small" text-anchor="start">(Anthropic API)</text>
+  <rect x="28" y="66" width="370" height="170" rx="12" fill="#232838" stroke="#c3e88d" stroke-width="1.5"/>
+  <text x="44" y="90" class="h" text-anchor="start">Simulator  (sim.py)</text>
+  <text x="382" y="90" class="small" text-anchor="end">on the real robot: the Create 3</text>
+  <line x1="46.0" y1="229.4" x2="152.5" y2="229.4" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="152.5" y1="229.4" x2="152.5" y2="104.0" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="46.0" y1="104.0" x2="116.2" y2="104.0" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="135.8" y1="104.0" x2="152.5" y2="104.0" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="46.0" y1="229.4" x2="46.0" y2="104.0" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="46.0" y1="181.7" x2="56.1" y2="181.7" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="75.0" y1="181.7" x2="152.5" y2="181.7" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="103.4" y1="181.7" x2="103.4" y2="132.2" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="103.4" y1="115.4" x2="103.4" y2="104.0" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="110.7" y1="229.4" x2="110.7" y2="207.6" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="110.7" y1="190.5" x2="110.7" y2="181.7" stroke="#aeb6c8" stroke-width="2.4" stroke-linecap="round"/>
+  <line x1="116.2" y1="104.0" x2="135.8" y2="104.0" stroke="#c3e88d" stroke-width="3" stroke-dasharray="3 3"/>
+  <line x1="71.08" y1="195.08" x2="87.1" y2="195.1" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="86.1" y2="200.6" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="83.3" y2="205.4" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="79.1" y2="208.9" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="73.9" y2="210.8" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="68.3" y2="210.8" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="63.1" y2="208.9" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="58.8" y2="205.4" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="56.0" y2="200.6" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="55.1" y2="195.1" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="56.0" y2="189.6" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="58.8" y2="184.8" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="63.1" y2="181.2" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="68.3" y2="179.3" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="73.9" y2="179.3" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="79.1" y2="181.2" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="83.3" y2="184.8" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <line x1="71.08" y1="195.08" x2="86.1" y2="189.6" stroke="#ffcb6b" stroke-opacity="0.35" stroke-width="1"/>
+  <circle cx="71.08" cy="195.08" r="4.5" fill="#ffcb6b"/>
+  <text x="166" y="116" class="t" text-anchor="start">The house: walls, doors, one exit.</text>
+  <text x="166" y="133" class="t" text-anchor="start">Physics: a move advances 1 cm at</text>
+  <text x="166" y="150" class="t" text-anchor="start">a time; if the body would touch a</text>
+  <text x="166" y="167" class="t" text-anchor="start">wall, it stops there: BUMP.</text>
+  <text x="166" y="184" class="t" text-anchor="start">Lidar: 72 rays, one every 5°.</text>
+  <text x="166" y="201" class="t" text-anchor="start">Judges success: centre outside.</text>
+  <line x1="80" y1="296" x2="80" y2="244" stroke="#ffcb6b" stroke-width="2" marker-end="url(#a-yellow)"/>
+  <text x="90" y="274" class="lab" text-anchor="start">move(1.0) or turn(45)</text>
+  <line x1="360" y1="244" x2="360" y2="296" stroke="#c3e88d" stroke-width="2" marker-end="url(#a-green)"/>
+  <text x="350" y="274" class="lab" text-anchor="end">result + scan</text>
+  <rect x="28" y="304" width="370" height="178" rx="12" fill="#232838" stroke="#7fb4ff" stroke-width="1.5"/>
+  <text x="44" y="328" class="h" text-anchor="start">Agent loop  (agent.py)</text>
+  <text x="44" y="352" class="t" text-anchor="start">1. Turns the result into a log entry:</text>
+  <text x="60" y="369" class="small" text-anchor="start">“Step 12 ... BUMP ... Scan: front clear</text>
+  <text x="60" y="385" class="small" text-anchor="start">0.34 m, farthest >8 m; ...”</text>
+  <text x="44" y="406" class="t" text-anchor="start">2. Memory: keeps the last entry (goldfish),</text>
+  <text x="60" y="423" class="small" text-anchor="start">10 (window), all (full), plus a notebook.</text>
+  <text x="44" y="446" class="t" text-anchor="start">3. Builds a request, sends it, gets a reply.</text>
+  <text x="44" y="463" class="t" text-anchor="start">4. Runs the tool the reply asks for.</text>
+  <rect x="450" y="66" width="284" height="170" rx="12" fill="#232838" stroke="#f4a6c0" stroke-width="1.5"/>
+  <text x="466" y="90" class="h" text-anchor="start">Prompt cache</text>
+  <text x="466" y="114" class="t" text-anchor="start">Remembers the beginning of recent</text>
+  <text x="466" y="131" class="t" text-anchor="start">requests for 5 minutes.</text>
+  <text x="466" y="148" class="t" text-anchor="start">If the next request starts with the</text>
+  <text x="466" y="165" class="t" text-anchor="start">same text, that part is read back at</text>
+  <text x="466" y="182" class="t" text-anchor="start">1/10 of the price, and faster.</text>
+  <text x="466" y="199" class="t" text-anchor="start">Any change ends the match there.</text>
+  <rect x="450" y="304" width="284" height="178" rx="12" fill="#232838" stroke="#f4a6c0" stroke-width="1.5"/>
+  <g transform="translate(486,356) scale(0.9)"><path d="M-2,-22 C-12,-28 -27,-21 -26,-10 C-34,-6 -33,8 -25,12 C-25,22 -12,26 -2,21 Z" fill="#f4a6c0"/><path d="M2,-22 C12,-28 27,-21 26,-10 C34,-6 33,8 25,12 C25,22 12,26 2,21 Z" fill="#f4a6c0"/></g>
+  <text x="526" y="342" class="h" text-anchor="start">Claude Haiku 5.5</text>
+  <text x="526" y="360" class="small" text-anchor="start">the model</text>
+  <text x="466" y="396" class="t" text-anchor="start">Reads the whole request, thinks</text>
+  <text x="466" y="413" class="t" text-anchor="start">(hidden, billed as output), and</text>
+  <text x="466" y="430" class="t" text-anchor="start">answers with one sentence and</text>
+  <text x="466" y="447" class="t" text-anchor="start">one tool call. It keeps nothing</text>
+  <text x="466" y="464" class="t" text-anchor="start">between calls.</text>
+  <line x1="592" y1="296" x2="592" y2="244" stroke="#aeb6c8" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a-grey)"/>
+  <text x="602" y="268" class="lab" text-anchor="start">same start as before?</text>
+  <line x1="398" y1="400" x2="446" y2="400" stroke="#ffcb6b" stroke-width="2" marker-end="url(#a-yellow)"/>
+  <line x1="446" y1="440" x2="402" y2="440" stroke="#c3e88d" stroke-width="2" marker-end="url(#a-green)"/>
+  <text x="422" y="392" class="lab" text-anchor="middle">request</text>
+  <text x="422" y="458" class="lab" text-anchor="middle">reply</text>
+  <text x="28" y="528" class="h" text-anchor="start">What is sent to the cloud on every step (full history)</text>
+  <text x="28" y="561" class="t" text-anchor="start">call 1</text>
+  <rect x="92" y="546" width="132" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <text x="158.0" y="560.0" class="blk" text-anchor="middle">tools + system prompt</text>
+  <rect x="228" y="546" width="70" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <text x="263.0" y="560.0" class="blk" text-anchor="middle">task, start</text>
+  <text x="306" y="561" class="small" text-anchor="start">(first call: everything is new)</text>
+  <text x="28" y="591" class="t" text-anchor="start">call 2</text>
+  <rect x="92" y="576" width="132" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="158.0" y="590.0" class="blk" text-anchor="middle">tools + system prompt</text>
+  <rect x="228" y="576" width="70" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="263.0" y="590.0" class="blk" text-anchor="middle">task, start</text>
+  <rect x="302" y="576" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <text x="28" y="621" class="t" text-anchor="start">call 3</text>
+  <rect x="92" y="606" width="132" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="158.0" y="620.0" class="blk" text-anchor="middle">tools + system prompt</text>
+  <rect x="228" y="606" width="70" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="263.0" y="620.0" class="blk" text-anchor="middle">task, start</text>
+  <rect x="302" y="606" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="325" y="606" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <text x="28" y="651" class="t" text-anchor="start">call 18</text>
+  <rect x="92" y="636" width="132" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="158.0" y="650.0" class="blk" text-anchor="middle">tools + system prompt</text>
+  <rect x="228" y="636" width="70" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="263.0" y="650.0" class="blk" text-anchor="middle">task, start</text>
+  <rect x="302" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="325" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="348" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="371" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="394" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="417" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="440" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="463" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="486" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="509" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="532" y="636" width="20" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <rect x="555" y="636" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <text x="582" y="651" class="small" text-anchor="start">… 17 entries</text>
+  <text x="28" y="687" class="t" text-anchor="start">window</text>
+  <rect x="92" y="672" width="132" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="158.0" y="686.0" class="blk" text-anchor="middle">tools + system prompt</text>
+  <rect x="228" y="672" width="70" height="20" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="263.0" y="686.0" class="blk" text-anchor="middle">task</text>
+  <rect x="302" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="325" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="348" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="371" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="394" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="417" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="440" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="463" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="486" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <rect x="509" y="672" width="20" height="20" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <text x="536" y="687" class="small" text-anchor="start">slides: never the same</text>
+  <rect x="28" y="712" width="18" height="14" rx="3" fill="#2f3d5c" stroke="#7fb4ff" stroke-width="1.2"/>
+  <text x="52" y="724" class="small" text-anchor="start">read from the cache: 1/10 of the price</text>
+  <rect x="330" y="712" width="18" height="14" rx="3" fill="#5a4a1f" stroke="#ffcb6b" stroke-width="1.2"/>
+  <text x="354" y="724" class="small" text-anchor="start">new text: full price</text>
+  <text x="28" y="748" class="small" text-anchor="start">Every reply also costs its output: one sentence, one tool call, and the hidden thinking (300-400 tokens).</text>
+</svg>

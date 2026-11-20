@@ -59,7 +59,7 @@ this post is pure software. All the code is in
   matters later). The robot never starts in the exit's room.
 * **The robot.** Round, 0.17 m of radius, about the size of a Create 3. Two
   actions: `move(meters)` and `turn(degrees)`. A move stops if it bumps into
-  something, and says so.
+  something, and says so (more on the physics below).
 * **The lidar.** It casts 72 rays, one every 5 degrees. The model doesn't get
   72 numbers: after every action it gets a summary, as text, of 8 directions
   (front, front-left, left, ... front-right), 45 degrees each, with a little
@@ -77,7 +77,34 @@ this post is pure software. All the code is in
 
 The agent loop is the one from post 2, with the shell tools swapped for
 `move` and `turn`. Same model: Claude Haiku 5.5, the small cheap one, at its
-default ("medium") effort.
+default ("medium") effort. Here is the whole system in one picture:
+
+<figure style="margin: 1.5em 0;">
+  <img src="{{ '/assets/robot-agent/img/system.svg' | relative_url }}"
+       style="width: 100%;"
+       alt="The robot agent system. On my computer: the simulator (the house, the physics, a 72-ray lidar) and the agent loop. The agent loop sends move or turn to the simulator and gets back the result and a scan. It turns that into a log entry, keeps as much of the log as its memory setting allows, and sends a request to the cloud. In the cloud, Claude Haiku 5.5 reads the request and answers with one sentence and one tool call; a prompt cache remembers the start of recent requests and charges a tenth for repeating it. Below: with full history, every request repeats the previous one plus one new entry, so all but the newest entry is read from the cache; with a window, the entries change every call.">
+  <figcaption style="font-size: 0.85em; color: #8a93a6; margin-top: 0.4em;">
+    Everything on the left runs on my laptop. On the real Create 3, the
+    simulator box becomes the robot itself (the same <code>move</code>,
+    <code>turn</code> and scan, through ROS 2 on its Raspberry Pi), and the
+    agent loop would run on the Pi. The model always runs in the cloud: every
+    step is one request over the internet, and the model keeps nothing between
+    requests. All its memory is what the loop decides to send.
+  </figcaption>
+</figure>
+
+### How the simulator moves the robot
+
+There is no real physics engine: no mass, no momentum, no wheel slip. The
+simulator is *kinematic*: a move is a straight line, a turn is a turn in place.
+To move 1 m, it advances the robot 1 cm at a time, and before each centimetre
+it checks whether the robot's body (a circle of 17 cm radius) would touch a
+wall. If it would, the robot stops where it is, and the result says `BUMP:
+stopped after 0.43 m of 1.00 m`. That is roughly what the Create 3 does with
+its front bumper: drive, feel the contact, stop. Turning in place can never
+hit anything, because the robot is round. Walls are 8 cm thick; with
+zero-thickness walls, a wall seen exactly end-on could slip between two lidar
+rays: invisible, but solid.
 
 ## Four memories
 
@@ -102,11 +129,21 @@ own thinking from earlier calls is never sent back: what it remembers of its
 reasoning is what it said out loud.
 
 I expected less memory to be cheaper, but that isn't obvious, because of
-prompt caching. Full history only ever grows at the end, so on every call
-almost all of it can be read back from a cache at a tenth of the price. A
-sliding window changes on every call, so it can't. In the runs below, over
-90% of the full-history input came from the cache, against a third to 40% for
-the window.
+*prompt caching*. The model keeps nothing between calls, so every request
+carries everything again: the tool descriptions, the instructions, and the
+memory. That is a lot of repeated text. With caching on, the API remembers
+the beginning of each request for a few minutes. When the next request starts
+with exactly the same text, that part is read back from the cache at a tenth
+of the price (writing it the first time costs a quarter more than normal).
+The match is from the very first character: as soon as one character differs,
+everything after it is paid in full.
+
+That favours full history in a way I hadn't expected. It only ever grows at
+the end, so each request is the previous one plus one new entry, and all but
+that entry comes from the cache (the bottom of the picture above). A sliding
+window drops its oldest entry on every call, so from that point on nothing
+matches. In the runs below, over 90% of the full-history input came from the
+cache, against a third to 40% for the window.
 
 ## The baseline: keep the wall on your right
 
@@ -270,6 +307,25 @@ help me either: it drew the 8 summary readings as 8 lines, so it looked like
 a lidar with 8 rays, and looked fine. A nice picture isn't a measurement, and
 this time the picture I was trusting was my own.
 
+### Why 8 numbers, and not all 72?
+
+A fair question, once you see the replays: the lidar casts 72 rays, so why
+not send all of them and let the model work out what they mean?
+
+It wasn't cost. Sending all 72, labelled by angle (`0:1.36 5:1.34 10:1.37
+...`), is about 180 tokens per scan, against about 90 for 8 directions with
+two numbers each, and 36 for the 8 minimums I started with. With full
+history most of that comes from the cache; even with the window, where
+nothing does, the 72 rays would add about 2 cents to a run of 200 actions.
+
+The real reason is that it was my plan, and the plan was a guess: a small
+model would reason better over 8 named directions ("front-left is open")
+than over a wall of 72 numbers, and the log would stay readable, for the
+model and for me. I never tested that guess, and the 8 minimums are exactly
+what hid the exit. Letting the model see everything, and find its own way to
+read it, is closer to the spirit of the question this series asks. So the
+code can now do both (`--scan rays`).
+
 ## Round 3: let it see the gaps
 
 One change: every direction reports two numbers.
@@ -313,6 +369,16 @@ recognition, done by hand:
 
 > Steps 1-10 loop: current scan matches step-1 scan (front 1.6/3.6, left
 > 0.4/4.0).
+
+## Round 4: a harder house
+
+TODO: house 260, one run per setting, with clear + farthest (and, if run, all
+72 rays). Three doors from the start to the exit, where house 47 had two. The
+exit's room is right above the start room, but there is no door between
+them: the way out is a U, through the bottom-left room and the top-left room.
+The exit isn't visible from the start, and the robot has to drive *away* from
+it first. The wall follower
+takes 149 actions.
 
 ## What it costs
 

@@ -91,6 +91,7 @@ def summarize(batch_dir, rows, args, problems, interrupted):
               f"- Model: {', '.join(models) or '-'}" + ("  (FAKE: scripted stand-in, no API calls; "
                                                          "token counts are estimates)" if args.fake else ""),
               f"- Effort: {args.effort}",
+              f"- Scan the model reads: {'8 sectors (clear + farthest)' if args.scan == 'sectors' else 'all 72 rays'}",
               f"- Houses: seeds {args.house_start}..{args.house_start + args.houses - 1}, "
               f"{args.runs_per_house} run(s) per house per setting (the wall follower is "
               "deterministic: 1 run per house)",
@@ -251,9 +252,12 @@ def main():
     ap.add_argument("--workers", type=int, default=4, help="runs in parallel")
     ap.add_argument("--max-cost", type=float, default=5.0,
                     help="stop starting new runs once the batch has spent this many USD")
+    ap.add_argument("--scan", choices=["sectors", "rays"], default="sectors",
+                    help="what the model reads: 8 sectors (clear + farthest), or all 72 rays")
     ap.add_argument("--fake", action="store_true", help="scripted stand-in for the model: free")
     args = ap.parse_args()
 
+    agent.SCAN_FORMAT = args.scan
     settings = [s.strip() for s in args.settings.split(",") if s.strip()]
     bad = [s for s in settings if s not in ALL]
     if bad:
@@ -291,7 +295,7 @@ def main():
         print(f"resuming: {len(done)} runs already finished, {len(todo)} to go")
     print(f"{len(todo)} runs: settings {settings}, houses {args.house_start}.."
           f"{args.house_start + args.houses - 1}, step limit {args.steps}, "
-          f"model {'FAKE' if args.fake else agent.MODELS[args.model][0]}, effort {args.effort}, "
+          f"model {'FAKE' if args.fake else agent.MODELS[args.model][0]}, effort {args.effort}, scan {args.scan}, "
           f"cost cap ${args.max_cost:.2f}")
 
     lock = threading.Lock()

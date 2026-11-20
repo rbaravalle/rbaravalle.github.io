@@ -54,19 +54,7 @@ SYSTEM = """You are the brain of a small round robot (radius 0.17 m, the size of
 iRobot Create 3). You are somewhere inside a house. Your job: get out of the house.
 
 What you have:
-- A 2D lidar. Every action returns a fresh scan of 8 directions around you \
-(front, front-left, left, back-left, back, back-right, right, front-right). \
-Each direction covers a 45-degree slice and reports two numbers, both measured \
-from your body: "clear" is the free space before the nearest thing in that \
-slice (you can drive forward about the front "clear" before you touch \
-something; keep a margin, your sides can still catch a corner), and \
-"farthest" is the longest distance seen in that slice. When "farthest" is much \
-larger than "clear", part of the slice sees through a gap, such as a doorway. \
-Readings are a little noisy.
-- The house is small: from anywhere inside it, every distance is under 8 m. A \
-"farthest" of ">8 m" means part of that slice sees open space beyond the \
-house, through the exit. That is the only sign of the exit.
-- move(meters): drive straight ahead (negative drives backwards, at most 1 m). \
+{lidar}- move(meters): drive straight ahead (negative drives backwards, at most 1 m). \
 At most 2 m per command. If you bump into something you stop there, and the \
 result says so.
 - turn(degrees): turn in place. Positive turns left (counterclockwise), negative \
@@ -81,6 +69,33 @@ call done(); calling done() while still inside counts as a failure.
 
 On every turn, write one short sentence about what you see and what you will \
 do, then call exactly one tool."""
+
+LIDAR_TEXT = {
+    "sectors": """- A 2D lidar. Every action returns a fresh scan of 8 directions around you \
+(front, front-left, left, back-left, back, back-right, right, front-right). \
+Each direction covers a 45-degree slice and reports two numbers, both measured \
+from your body: "clear" is the free space before the nearest thing in that \
+slice (you can drive forward about the front "clear" before you touch \
+something; keep a margin, your sides can still catch a corner), and \
+"farthest" is the longest distance seen in that slice. When "farthest" is much \
+larger than "clear", part of the slice sees through a gap, such as a doorway. \
+Readings are a little noisy.
+- The house is small: from anywhere inside it, every distance is under 8 m. A \
+"farthest" of ">8 m" means part of that slice sees open space beyond the \
+house, through the exit. That is the only sign of the exit.
+""",
+    "rays": """- A 2D lidar. Every action returns a fresh scan of 72 rays, one every 5 \
+degrees, as "angle:distance" pairs. Angles are counterclockwise from straight \
+ahead: 0 is in front of you, 90 to your left, 180 behind, 270 to your right. \
+Each distance is the free space between your body and the nearest thing along \
+that ray (you can drive forward about the distance at 0 before you touch \
+something; keep a margin, your sides can still catch a corner). Readings are \
+a little noisy.
+- The house is small: from anywhere inside it, every distance is under 8 m. A \
+ray reading ">8" sees open space beyond the house, through the exit. That is \
+the only sign of the exit.
+""",
+}
 
 MEMORY_TEXT = {
     "goldfish": "Your memory: you see only your latest scan and your last action. "
@@ -106,6 +121,7 @@ POSITION_TEXT = {
 }
 NO_POSITION = ("- No map, no GPS, no odometry: you never learn your position. You only "
                "know what the scans tell you.")
+SCAN_FORMAT = "sectors"   # or "rays": all 72 readings (batch.py --scan rays)
 SCAN_CLEARANCE = True   # report free space from the body (the pilot runs used centre distances)
 # Each sector reports "clear" (its minimum) and "farthest" (its maximum). The
 # house-47 runs before this had only the minimum, which hides doorways and the
@@ -167,6 +183,7 @@ def tools_for(setting):
 
 def system_for(setting, max_steps):
     return SYSTEM.format(memory=MEMORY_TEXT[setting], max_steps=max_steps,
+                         lidar=LIDAR_TEXT[SCAN_FORMAT],
                          position=POSITION_TEXT.get(setting, NO_POSITION))
 
 
@@ -185,6 +202,13 @@ def to_jsonable(x):
     return x
 
 
+def scan_text(mins, maxes, rays):
+    """The scan in the format this run uses."""
+    if SCAN_FORMAT == "rays":
+        return sim.format_rays(rays, SCAN_CLEARANCE)
+    return sim.format_scan(mins, SCAN_CLEARANCE, maxes)
+
+
 def describe(result, steps_used, max_steps, odometry=None):
     """A robot action's result, as the model reads it."""
     if result["action"] == "move":
@@ -199,7 +223,7 @@ def describe(result, steps_used, max_steps, odometry=None):
     if result.get("clamped"):
         text += " (The command was outside the allowed range and was clamped.)"
     out = (f"{text} Actions used: {steps_used} of {max_steps}.\n"
-           f"Scan: {sim.format_scan(result['scan'], SCAN_CLEARANCE, result.get('scan_max'))}")
+           f"Scan: {scan_text(result['scan'], result.get('scan_max'), result.get('rays_noisy'))}")
     if odometry is not None:
         x, y, h = odometry
         out += f"\nOdometry: x {x:.2f} m, y {y:.2f} m, heading {h:.0f} degrees."
@@ -371,9 +395,17 @@ class FakeClient:
                                           name="read_notes", input={})], "tool_use")
         if not scans:
             raise ValueError("fake model: no scan found in the prompt")
-        scan = [None if v == ">8 m" else float(v.split()[0])
-                for v in re.findall(r"(?:^|; )[a-z-]+ clear (>8 m|[0-9.]+ m)" if "clear" in scans[-1]
-                                    else r"(?:^|, )[a-z-]+ (>8 m|[0-9.]+ m)", scans[-1])]
+        pairs = re.findall(r"(\d+):(>8|[0-9.]+)", scans[-1])
+        if len(pairs) == 72:   # all rays: back to 8 sector minimums for the rule
+            ray = {int(a): None if d == ">8" else float(d) for a, d in pairs}
+            scan = []
+            for i in range(8):
+                ds = [ray[(45 * i + o) % 360] for o in range(-20, 21, 5)]
+                scan.append(None if all(d is None for d in ds) else min(d for d in ds if d is not None))
+        else:
+            scan = [None if v == ">8 m" else float(v.split()[0])
+                    for v in re.findall(r"(?:^|; )[a-z-]+ clear (>8 m|[0-9.]+ m)" if "clear" in scans[-1]
+                                        else r"(?:^|, )[a-z-]+ (>8 m|[0-9.]+ m)", scans[-1])]
         assert len(scan) == 8, scans[-1]
         if SCAN_CLEARANCE:   # the rule works in distances from the centre
             scan = [None if d is None else d + sim.ROBOT_RADIUS for d in scan]
@@ -401,13 +433,13 @@ def run_agent(client, setting, house, noise_seed, max_steps, model="haiku",
     system = [{"type": "text", "text": system_text, "cache_control": {"type": "ephemeral"}}]
     log({"type": "header", "setting": setting, "model": model_id, "effort": effort,
          "house_seed": house.seed, "noise_seed": noise_seed, "max_steps": max_steps,
-         "scan_clearance": SCAN_CLEARANCE, "system": system_text, "tools": tools, "house": house.to_json(),
+         "scan_format": SCAN_FORMAT, "scan_clearance": SCAN_CLEARANCE, "system": system_text, "tools": tools, "house": house.to_json(),
          "date": time.strftime("%Y-%m-%d %H:%M:%S %z"), "fake": fake})
 
     start_scan = robot.scan()
     start_rays = robot.last_rays
     # The run so far, as the model will read it (see "memory" above).
-    start_text = f"Start. Scan: {sim.format_scan(start_scan, SCAN_CLEARANCE, robot.last_max)}"
+    start_text = f"Start. Scan: {scan_text(start_scan, robot.last_max, robot.last_rays_noisy)}"
     if setting == "odometry":
         start_text += "\nOdometry: x 0.00 m, y 0.00 m, heading 0 degrees."
     entries = [{"text": start_text, "robot_action": 0}]

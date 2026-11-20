@@ -72,6 +72,10 @@ The last line printed is always the path of the bundle to upload.
 
 Free versions of all of the above: add `--fake`.
 
+What the model reads from the lidar: by default 8 sectors, each with "clear"
+(minimum) and "farthest" (maximum). `--scan rays` sends all 72 rays instead,
+labelled by angle.
+
 ## What every batch writes
 
 `runs/<batch>/`:

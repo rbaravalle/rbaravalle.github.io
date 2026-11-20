@@ -69,13 +69,17 @@
         el('option', {value: i, text: labels[i] || src.split('/').pop()}, select);
       });
     }
+    var back = el('button', {text: '\u25C0', title: 'one step back'}, bar);
     var play = el('button', {text: 'Play'}, bar);
+    var fwd = el('button', {text: '\u25B6', title: 'one step forward'}, bar);
     var slider = el('input', {type: 'range', min: 0, max: 0, value: 0}, bar);
     var stepLabel = el('span', {'class': 'rr-step'}, bar);
-    var speed = el('button', {text: '1x'}, bar);
+    var speed = el('button', {text: '1 step/s', title: 'playback speed'}, bar);
     var info = el('div', {'class': 'rr-info'}, root);
 
-    var run = null, i = 0, timer = null, fps = 4;
+    // Slow by default: one step per second leaves time to read what the model said.
+    var SPEEDS = [1, 2, 5, 20, 0.5];
+    var run = null, i = 0, timer = null, fps = SPEEDS[0];
     var ctx = canvas.getContext('2d');
 
     function load(k) {
@@ -209,9 +213,11 @@
       }, 1000 / fps);
     };
     slider.oninput = function () { i = +slider.value; draw(); };
+    back.onclick = function () { stop(); if (run && i > 0) { i--; slider.value = i; draw(); } };
+    fwd.onclick = function () { stop(); if (run && i < run.steps.length) { i++; slider.value = i; draw(); } };
     speed.onclick = function () {
-      fps = fps === 4 ? 12 : fps === 12 ? 40 : 4;
-      speed.textContent = {4: '1x', 12: '3x', 40: '10x'}[fps];
+      fps = SPEEDS[(SPEEDS.indexOf(fps) + 1) % SPEEDS.length];
+      speed.textContent = fps + ' step' + (fps === 1 ? '' : 's') + '/s';
       if (timer) { stop(); play.onclick(); }
     };
     if (select) select.onchange = function () { load(+select.value); };

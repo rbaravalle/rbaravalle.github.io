@@ -354,3 +354,26 @@ def test_minimums_unchanged_by_the_maximums():
     r2.move(0.5)
     r2.turn(30)
     assert r2.scan() == a
+
+
+def test_rays_format_has_72_labelled_readings():
+    r = sim.SimRobot(sim.make_house(47), 47)
+    r.scan()
+    t = sim.format_rays(r.last_rays_noisy)
+    pairs = t.split()
+    assert len(pairs) == 72 and pairs[0].startswith("0:") and pairs[-1].startswith("355:")
+
+
+def test_fake_run_with_all_rays():
+    old = agent.SCAN_FORMAT
+    agent.SCAN_FORMAT = "rays"
+    try:
+        recs = []
+        row, _ = agent.run_agent(agent.FakeClient(1), "full", sim.make_house(2), 2, 40,
+                                 fake=True, log=recs.append)
+        assert row["error"] is None, row["error"]
+        assert "72 rays" in recs[0]["system"] and recs[0]["scan_format"] == "rays"
+        sent = json.dumps([r["request"] for r in recs if r["type"] == "call"])
+        assert "355:" in sent and "farthest" not in sent
+    finally:
+        agent.SCAN_FORMAT = old

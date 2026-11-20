@@ -191,7 +191,8 @@ def summarize(batch_dir, rows, args, problems, interrupted):
     warn = list(problems)
     for s in agent.SETTINGS:
         rs = by[s]
-        if rs and not args.fake and sum(r["cache_read_input_tokens"] for r in rs) == 0:
+        if (rs and not args.fake and sum(r["calls"] for r in rs) > 0
+                and sum(r["cache_read_input_tokens"] for r in rs) == 0):
             warn.append(f"{s}: no cache reads at all. Is the cached prefix below the model's minimum?")
     errs = [r for r in rows if r["outcome"] == "error"]
     for r in errs[:20]:
@@ -273,6 +274,19 @@ def main():
     if not args.fake and any(s != "wall" for s in settings):
         import anthropic
         client = anthropic.Anthropic(max_retries=6)   # reads ANTHROPIC_API_KEY
+        # Check the key before anything runs. Counting tokens is free.
+        try:
+            client.messages.count_tokens(model=agent.MODELS[args.model][0],
+                                         messages=[{"role": "user", "content": "hi"}])
+        except anthropic.AuthenticationError as e:
+            sys.exit(f"\nThe API rejected the key: {e}\nCheck ANTHROPIC_API_KEY. Nothing was run or spent.")
+        except anthropic.APIConnectionError as e:
+            sys.exit(f"\nCould not reach the API: {e}\nCheck the network. Nothing was run or spent.")
+        except TypeError as e:   # the SDK found no credentials at all
+            sys.exit("\nNo API key found in this terminal. Run\n"
+                     "    export ANTHROPIC_API_KEY=...\n"
+                     "in this same terminal (a new terminal window does not keep it), "
+                     f"then the same command again. Nothing was run or spent.\n({e})")
 
     # House-major order, so an interrupted batch is still balanced across settings.
     jobs = []
@@ -289,6 +303,8 @@ def main():
         for line in results_path.read_text().splitlines():
             if line.strip():
                 r = json.loads(line)
+                if r["outcome"] == "error":
+                    continue          # a failed run is tried again
                 done[r["run_id"]] = r
     todo = [j for j in jobs if j[0] not in done]
     if done:

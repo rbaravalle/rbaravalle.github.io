@@ -10,6 +10,12 @@ $grey-color:       #8a93a6;
 $grey-color-light: #343b4d;   // borders, table stripes
 $grey-color-dark:  #aeb6c8;   // site title, secondary text
 
+// Accents, used sparingly on top of the dark palette.
+$accent-warm:   #ffb86b;   // site title, dates, highlights
+$accent-violet: #c792ea;   // headings
+$accent-teal:   #5eead4;
+$accent-gradient: linear-gradient(90deg, $brand-color, $accent-violet, $accent-warm);
+
 // Pull in the minima theme using the palette above.
 @import "minima";
 
@@ -21,6 +27,98 @@ body {
 .site-header,
 .site-footer {
   border-color: $grey-color-light;
+}
+
+// Colour strip across the top of every page (replaces minima's grey line).
+.site-header {
+  border-top: 0;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: $accent-gradient;
+  }
+}
+
+.site-title,
+.site-title:visited {
+  color: $accent-warm;
+  &:hover { color: lighten($accent-warm, 8%); text-decoration: none; }
+}
+
+.site-nav .page-link {
+  color: $text-color;
+  &:hover { color: $brand-color; text-decoration: none; }
+}
+
+// Headings inside pages and posts.
+.page-content {
+  h1, h2, h3 { color: lighten($accent-violet, 6%); }
+}
+
+.post-title,
+.page-heading {
+  color: $text-color;
+  &::after {                       // short gradient underline
+    content: "";
+    display: block;
+    width: 64px;
+    height: 3px;
+    margin-top: 0.3em;
+    border-radius: 2px;
+    background: $accent-gradient;
+  }
+}
+
+.post-meta { color: $accent-teal; }
+
+.post-list-heading { color: $accent-violet; }
+
+.post-list > li {
+  border-left: 3px solid $grey-color-light;
+  padding-left: 1em;
+  transition: border-color 0.2s;
+  &:hover { border-left-color: $brand-color; }
+}
+
+// Footer: name once, description, coloured icon links.
+.site-footer { padding: 24px 0; }
+
+.footer-inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1em;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-heading { color: $accent-warm; margin-bottom: 0.2em; }
+
+.footer-description { color: $grey-color; font-size: 0.9em; margin: 0; }
+
+.footer-icons {
+  list-style: none;
+  display: flex;
+  gap: 0.9em;
+  margin: 0;
+
+  a {
+    display: inline-flex;
+    padding: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.04);
+    transition: transform 0.15s, background 0.15s;
+    &:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.1); }
+  }
+  svg { display: block; }
+
+  .icon-github   { color: #e6edf3; }
+  .icon-linkedin { color: #4ea1ff; }
+  .icon-email    { color: $accent-warm; }
+  .icon-rss      { color: #ff9a3c; }
 }
 
 a:hover {
@@ -66,7 +164,7 @@ pre code {
 
 blockquote {
   color: $grey-color-dark;
-  border-left-color: $grey-color-light;
+  border-left-color: $accent-violet;
 }
 
 table,
@@ -106,7 +204,7 @@ tr:nth-child(even) {
 .project-title { font-size: 1.3em; margin-bottom: 0.2em; }
 
 .project-meta {
-  color: $grey-color;
+  color: $accent-teal;
   font-size: 0.9em;
   margin-bottom: 0.6em;
 }

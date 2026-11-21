@@ -99,6 +99,23 @@
     - label: "IEEE Spectrum article"
       url: "https://spectrum.ieee.org/how-irobots-roomba-will-roomify-your-home"
 
+- title: "Dense S-PTAM: real-time dense 3D maps from stereo SLAM"
+  meta: "CIFASIS-CONICET, Rosario · 2017–2018 · Robotica 2018"
+  description: >-
+    S-PTAM is a stereo SLAM system that tracks the camera with a sparse set of
+    points. Dense S-PTAM extends it to rebuild a full 3D point cloud of the
+    environment in real time, from the poses S-PTAM estimates and the
+    disparity maps computed from each stereo pair (with LIBELAS). It runs as a
+    ROS node and was evaluated on the KITTI and Tsukuba datasets.
+  image: dense-sptam.jpg
+  links:
+    - label: "Code (GitHub)"
+      url: "https://github.com/CIFASIS/dense-sptam"
+    - label: "Video"
+      url: "https://youtu.be/yPAoFu_LhhA"
+    - label: "S-PTAM"
+      url: "https://github.com/lrse/sptam"
+
 - title: "Modelling and rendering bread"
   meta: "PhD · CIFASIS-CONICET, Rosario · 2011–2016"
   description: >-

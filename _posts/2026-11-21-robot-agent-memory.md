@@ -1,17 +1,7 @@
 ---
 title: "A robotics agent. How much does it need to remember?"
-# Fixed address for the local preview. Remove when publishing (move to _posts/).
-permalink: /drafts/robot-agent-memory/
+date: 2026-11-21
 ---
-
-<!--
-DRAFT, second version. All numbers are from the runs of 2026-11-20, with
-Claude Haiku 5.5 at medium effort:
-  pilot:    5 houses, 1 run per setting, $0.69
-  round 1:  house 47, 5 runs per setting, $1.24
-  round 2:  house 47, 1 run per setting (clearance, odometry), $0.38
-  round 3:  house 47, 1 run per setting (clear + farthest), $0.07
--->
 
 ***There is no risk that your life gets boring if you have Conrad around.
 "I am going to have a body!" - exclaims Conrad. People from Robotics LTD is going to put me in the most advanced robot yet.***

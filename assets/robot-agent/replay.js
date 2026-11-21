@@ -6,7 +6,7 @@
  *   <script src="/assets/robot-agent/replay.js"></script>
  *
  * Several runs in one player: separate the paths with commas, and optionally
- * name them with data-labels="Goldfish,Notebook".
+ * name them with data-labels="Goldfish|Notebook" (labels separated by "|").
  *
  * What it draws: the walls (8 cm thick), the exit in green, the path so far,
  * red marks where the robot bumped, the robot, and its lidar at that step:
@@ -232,7 +232,9 @@
       var n = nodes[k];
       if (n.__rr) continue;
       var srcs = (n.getAttribute('data-robot-replay') || '').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
-      var labels = (n.getAttribute('data-labels') || '').split(',').map(function (x) { return x.trim(); });
+      // Labels are separated by "|" (so a label can contain a comma); plain commas still work.
+      var raw = n.getAttribute('data-labels') || '';
+      var labels = raw.split(raw.indexOf('|') >= 0 ? '|' : ',').map(function (x) { return x.trim(); });
       n.__rr = new Player(n, srcs, labels);
     }
   }

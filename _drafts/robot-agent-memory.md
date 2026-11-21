@@ -216,7 +216,7 @@ anything, and I'm not going to pretend they do. What they show clearly is
 *how* the agent fails, and it failed the same way with every memory.
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v1-full-h047-r3.json' | relative_url }},{{ '/assets/robot-agent/runs/v1-notebook-h047-r2.json' | relative_url }}"
-     data-labels="Full history (round 1),Notebook (round 1)"></div>
+     data-labels="Full history (round 1)|Notebook (round 1)"></div>
 
 **It forgot its own body.** Of the 65 bumps, 51 came from the same mistake:
 the scan says the front is clear for 1.63 m, the model asks for `move(1.5)`,
@@ -325,25 +325,6 @@ help me either: it drew the 8 summary readings as 8 lines, so it looked like
 a lidar with 8 rays, and looked fine. A nice picture isn't a measurement, and
 this time the picture I was trusting was my own.
 
-### Why 8 numbers, and not all 72?
-
-A fair question, once you see the replays: the lidar casts 72 rays, so why
-not send all of them and let the model work out what they mean?
-
-It wasn't cost. Sending all 72, labelled by angle (`0:1.36 5:1.34 10:1.37
-...`), is about 180 tokens per scan, against about 90 for 8 directions with
-two numbers each, and 36 for the 8 minimums I started with. With full
-history most of that comes from the cache; even with the window, where
-nothing does, the 72 rays would add about 2 cents to a run of 200 actions.
-
-The real reason is that it was my plan, and the plan was a guess: a small
-model would reason better over 8 named directions ("front-left is open")
-than over a wall of 72 numbers, and the log would stay readable, for the
-model and for me. I never tested that guess, and the 8 minimums are exactly
-what hid the exit. Letting the model see everything, and find its own way to
-read it, is closer to the spirit of the question this series asks. So the
-code can now do both (`--scan rays`).
-
 ## Round 3: success, let it see the gaps
 
 One change: every direction reports two numbers.
@@ -376,7 +357,7 @@ intended:
 > is straight ahead.
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v3-full-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v3-goldfish-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v3-window-h047-r0.json' | relative_url }}"
-     data-labels="Full history (round 3),Goldfish (round 3),Window (round 3)"></div>
+     data-labels="Full history (round 3)|Goldfish (round 3)|Window (round 3)"></div>
 
 The goldfish, the window and the notebook still went into the dead end four or
 five times each before they found the right door, so memory may still matter.
@@ -408,7 +389,7 @@ follower takes 148 actions.
 | odometry | yes | 15 | $0.003 |
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v4-full-h260-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v4-goldfish-h260-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v4-wall-h260-r0.json' | relative_url }}"
-     data-labels="Full history (round 4),Goldfish (round 4),Wall follower (round 4)"></div>
+     data-labels="Full history (round 4)|Goldfish (round 4)|Wall follower (round 4)"></div>
 
 Every setting got out, every one took the same U, and none of them went back
 into a room it had left. The whole batch cost under 3 cents. The strategy is
@@ -454,7 +435,7 @@ exactly one door, so the rooms always form a tree.)
 | odometry | yes | 16 | $0.003 |
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v5-wall-h287-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v5-full-h287-r0.json' | relative_url }}"
-     data-labels="Wall follower (round 5),Full history (round 5)"></div>
+     data-labels="Wall follower (round 5)|Full history (round 5)"></div>
 
 The trap caught exactly one robot: the wall follower. Keeping its hand on the
 wall, it went into the dead end, searched all of it, and ran out of actions
@@ -471,6 +452,25 @@ remember where you've been. A real memory test needs an exit that stays out
 of sight until the very last room, and I haven't built that yet.
 
 </details>
+
+## Why 8 numbers, and not all 72?
+
+A fair question, once you see the replays: the lidar casts 72 rays, so why
+not send all of them and let the model work out what they mean?
+
+It wasn't cost. Sending all 72, labelled by angle (`0:1.36 5:1.34 10:1.37
+...`), is about 180 tokens per scan, against about 90 for 8 directions with
+two numbers each, and 36 for the 8 minimums I started with. With full
+history most of that comes from the cache; even with the window, where
+nothing does, the 72 rays would add about 2 cents to a run of 200 actions.
+
+The real reason is that it was my plan, and the plan was a guess: a small
+model would reason better over 8 named directions ("front-left is open")
+than over a wall of 72 numbers, and the log would stay readable, for the
+model and for me. I never tested that guess, and the 8 minimums are exactly
+what hid the exit. Letting the model see everything, and find its own way to
+read it, is closer to the spirit of the question this series asks. So I tried
+it, in two rounds.
 
 <details markdown="1">
 <summary style="cursor: pointer; margin: 1.2em 0 0.6em;"><b>Round 6: all 72 rays.</b> Much worse: one success, about fifty bumps per run, three times the thinking. My hint told it to trust the ray straight ahead. <i>(click to expand)</i></summary>
@@ -492,7 +492,7 @@ thinking per action as in round 3 (about 1,000 output tokens against 300).
 This one batch cost more than everything else in the post together.
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v6-rays-full-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v6-rays-window-h047-r0.json' | relative_url }}"
-     data-labels="Full history, 72 rays (round 6),Window, 72 rays (round 6)"></div>
+     data-labels="Full history, 72 rays (round 6)|Window, 72 rays (round 6)"></div>
 
 The bumps have one cause, and it's mine again. The model reads the single ray
 straight ahead and drives:
@@ -536,7 +536,7 @@ longer than the ones beside them (at 1 m, 5 degrees is about 9 cm).
 | odometry | no | 200 | 28 | $0.489 |
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v7-rays-notebook-h047-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v7-rays-odometry-h047-r0.json' | relative_url }}"
-     data-labels="Notebook, 72 rays read properly (round 7),Odometry, 72 rays read properly (round 7)"></div>
+     data-labels="Notebook, 72 rays read properly (round 7)|Odometry, 72 rays read properly (round 7)"></div>
 
 Four out of five got out, against one in round 6, and the bumps mostly went
 away. The model now does the geometry itself, in words:
@@ -607,7 +607,7 @@ the 8-direction scan (clear + farthest).
 | odometry | 2 of 3 | 200, 50, 59 | 9, 2, 2 |
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v8-full-h886-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v8-window-h886-r1.json' | relative_url }},{{ '/assets/robot-agent/runs/v8-odometry-h886-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v8-wall-h886-r0.json' | relative_url }}"
-     data-labels="Full history, 16 actions (round 8),Window, 199 actions (round 8),Odometry, ran out (round 8),Wall follower (round 8)"></div>
+     data-labels="Full history, out in 16 actions (round 8)|Window, out in 199 actions (round 8)|Odometry, ran out of actions (round 8)|Wall follower (round 8)"></div>
 
 The trap turned out to be the right-hand room, not the dead end. Its door up
 to the top room is easy to miss, and run after run the robot went into the
@@ -637,6 +637,29 @@ position once, at action 140 ("the back direction, which heads toward the area
 near (0, -3)"), after saying that the scans "keep leading back into the same
 cramped pocket". Memory lets the robot see that it's going in circles.
 It doesn't give it a way to stop.
+
+### So what would make memory useful?
+
+A strategy that uses it. In these runs, the robots that got out of a loop did it
+by changing rule or by luck, never by remembering more: the notebook in the
+pilot that switched to wall following, and the window run in round 8 that
+turned toward the right door early and got out in 23 actions. What's missing is a rule like *"keep a list of the
+openings you have seen, with where you saw them, and always go to one you
+haven't tried yet"*. Roboticists call that frontier exploration, and it needs
+exactly two things these agents had in pieces: a position (odometry) and a
+memory of places (the notebook's "A" and "B").
+
+There are three ways to give it that, from least to most hand-written:
+
+1. **Say it in the prompt**: explain the rule, and let the model keep the list
+   in its notebook. That is what fixed the 72 rays in round 7: an explanation.
+2. **Give it a tool**: `mark_opening()` and `list_unvisited()`, backed by
+   odometry, so the bookkeeping is done by code and the model only decides.
+3. **Give it a map**: a real SLAM map and a planner, and let the model choose
+   *where* to go while the hand-written stack works out *how*.
+
+Each step moves more of the work from the model into code I write, which is
+exactly the trade this series is about. That is the next post.
 
 ## What it costs
 
@@ -703,6 +726,15 @@ In short:
    Remembering where you've been only helps if you have a plan that uses it,
    and that plan, systematic exploration, is one more thing a robotics stack
    writes by hand.
+4. **What I'd expect with a camera** (not tested here). In a simulated 3D
+   world with images, the robot would probably find the exit faster, because
+   a picture shows much more than 8 numbers: a doorway, daylight, a corridor.
+   Memory would matter even less, and each step would cost more, because
+   images are expensive to send. But an image is a lot of unprocessed
+   information. If 72 raw numbers did worse than 8 processed ones, a raw
+   image may need the same treatment: object detection or something similar
+   first ("door, 2 m ahead, slightly left"), and only that sent to the
+   agent. That is, again, the hand-written part of the stack.
 
 
 I wanted to try an AI agent on a simple robotic task for the first time, as a first step.

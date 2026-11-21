@@ -109,10 +109,10 @@
     ROS node and was evaluated on the KITTI and Tsukuba datasets.
   image: dense-sptam.jpg
   links:
+    - label: "Real-time dense map fusion for stereo SLAM (Robotica, 2018)"
+      url: "https://doi.org/10.1017/S0263574718000528"
     - label: "Code (GitHub)"
       url: "https://github.com/CIFASIS/dense-sptam"
-    - label: "Video"
-      url: "https://youtu.be/yPAoFu_LhhA"
     - label: "S-PTAM"
       url: "https://github.com/lrse/sptam"
 

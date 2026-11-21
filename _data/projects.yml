@@ -2,7 +2,7 @@
 # To add a picture: put the file in assets/projects/ and set `image:` to its name.
 
 - title: "Exploratory R&D: perception, learning and 3D on embedded robots"
-  meta: "iRobot · 2026 · engineering manager · internal projects"
+  meta: "iRobot UK · 2026 · engineering manager · internal projects"
   description: >-
     In 2026 my team took on several new lines of work, mostly exploratory:
   bullets:
@@ -26,7 +26,7 @@
       url: "https://developer.nvidia.com/isaac/sim"
 
 - title: "ROS 2 autonomy demos: fast mapping and cleaning missions"
-  meta: "iRobot · 2025 · engineering manager · internal project"
+  meta: "iRobot UK · 2025 · engineering manager · internal project"
   description: >-
     I led a partly new team through two live demos of iRobot's new ROS 2
     autonomy stack, both presented to the executive team, guiding the
@@ -41,7 +41,7 @@
   links: []
 
 - title: "Smaller iRobot projects"
-  meta: "iRobot · 2021–2026"
+  meta: "iRobot UK · 2021–2026"
   description: >-
     Other pieces of mapping and product work, from features I built myself to
     ones I coordinated across teams:
@@ -56,7 +56,7 @@
   links: []
 
 - title: "map2json: robot maps in the cloud"
-  meta: "iRobot · 2021 · owner and sole developer"
+  meta: "iRobot UK · 2021 · owner and sole developer"
   description: >-
     A C++ translation layer between the maps Roombas build and the format the
     iRobot app shows, running in AWS Lambda. It works both ways: robot maps go
@@ -85,7 +85,7 @@
   links: []
 
 - title: "RoomsSeg: room-by-room cleaning for Roomba"
-  meta: "iRobot · 2015 onwards · IROS 2017"
+  meta: "iRobot US - Pasadena · 2015 onwards · IROS 2017"
   description: >-
     The robot builds a grid map while it cleans, and RoomsSeg turns it into
     rooms and hallways: it removes clutter from the map, then applies
@@ -116,7 +116,7 @@
     - label: "S-PTAM"
       url: "https://github.com/lrse/sptam"
 
-- title: "Modelling and rendering bread"
+- title: "Modelling and rendering bread and porous materials"
   meta: "PhD · CIFASIS-CONICET, Rosario · 2011–2016"
   description: >-
     My PhD built a computational model of bread making. It simulates proving

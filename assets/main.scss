@@ -11,8 +11,8 @@ $grey-color-light: #343b4d;   // borders, table stripes
 $grey-color-dark:  #aeb6c8;   // site title, secondary text
 
 // Accents, used sparingly on top of the dark palette.
-$accent-warm:   #ffb86b;   // site title, dates, highlights
-$accent-violet: #c792ea;   // headings
+$accent-warm:   #9be38a;   // site title, footer name (soft green)
+$accent-violet: #a5b4fc;   // headings (periwinkle)
 $accent-teal:   #5eead4;
 $accent-gradient: linear-gradient(90deg, $brand-color, $accent-violet, $accent-warm);
 
@@ -56,7 +56,7 @@ body {
 
 // Headings inside pages and posts.
 .page-content {
-  h1, h2, h3 { color: lighten($accent-violet, 6%); }
+  h1, h2, h3 { color: $accent-violet; }
 }
 
 .post-title,
@@ -118,7 +118,7 @@ body {
   .icon-github   { color: #e6edf3; }
   .icon-linkedin { color: #4ea1ff; }
   .icon-email    { color: $accent-warm; }
-  .icon-rss      { color: #ff9a3c; }
+  .icon-rss      { color: $accent-teal; }
 }
 
 a:hover {

@@ -1,5 +1,5 @@
 ---
-title: "How much does a robotic agent need to remember?"
+title: "A robotics agent. How much does it need to remember?"
 # Fixed address for the local preview. Remove when publishing (move to _posts/).
 permalink: /drafts/robot-agent-memory/
 ---
@@ -13,18 +13,17 @@ Claude Haiku 5.5 at medium effort:
   round 3:  house 47, 1 run per setting (clear + farthest), $0.07
 -->
 
-**There is no risk that your life gets boring if you have Conrad around.
-"I am going to have a body!" - exclaims Conrad. People from Robotics SA is going to put me in the most advanced robot yet.**
+***There is no risk that your life gets boring if you have Conrad around.
+"I am going to have a body!" - exclaims Conrad. People from Robotics LTD is going to put me in the most advanced robot yet.***
 
 In the [last post]({% post_url 2026-11-18-a-tiny-agent %}) I opened the box:
 a coding agent is a loop around a model, and what makes it work is the
-feedback. This time I wanted to apply an agent to a robotics task, something I undertand well.
+feedback. This time I wanted to apply an agent to a robotics task, something I understand well.
 
-Here is the question behind the next few posts. Classical robot navigation
-(SLAM, path planners, hand-written behaviours) is intelligence we wrote by
+Classical robot navigation (SLAM, path planners, hand-written behaviours) is intelligence we wrote by
 hand, because machines had none of their own. Now they have some. **Can an
 agent replace that hand-written stack?** I don't expect one blog post to
-answer that. I just want to understand these systems in a simulated example that I can later extend.
+answer that, and the answer is most likely yes. I just want to understand these systems in a simulated example that I can later extend. I would love to see an agent I helped code perform an useful task at my home.
 
 The agent gets **no map, no SLAM and no planner**. Only a sensor (simulating a Lidar), two actions,
 and a limited memory. Its job: get out of a house.
@@ -37,7 +36,7 @@ plus an estimate of where I am on it. An agent with no map has to come up
 with its own answer, for example by writing notes to itself. Do those notes
 turn into a kind of map in words?
 
-Memory costs real money in these exercises (I don't have a powerful machine to run one locally). Everything the agent remembers is sent to
+Memory costs real money in these exercises (I don't have a powerful machine to run models locally). Everything the agent remembers is sent to
 the model again on every call: more memory means more tokens, more latency,
 more context. So the question for this post was:
 
@@ -96,7 +95,7 @@ default ("medium") effort.
 
 ### How the simulator moves the robot
 
-There is no real physics engine: no mass, no momentum, no wheel slip. The
+There is no real physics engine: no mass, momentum or wheel slip. The
 simulator is *kinematic*: a move is a straight line, a turn is a turn in place.
 To move 1 m, it advances the robot 1 cm at a time, and before each centimetre
 it checks whether the robot's body (a circle of 17 cm radius) would touch a
@@ -123,7 +122,7 @@ added one now and then, to write a note). A call took about 2 seconds (median
 still. On the real Create 3 it would be the same: drive, stop, think for two
 seconds, drive again. That is slow for a robot, and it is one reason a real
 system would keep fast reflexes, like stopping on the bumper, on the robot
-itself, and ask the model only for the bigger decisions.
+itself, and ask the model only for the bigger decisions - very similarly to how humans work (if you touch something very hot, your arm moves before you even notice it).
 
 ## Four memory settings to compare
 
@@ -211,8 +210,7 @@ Five runs of each setting:
 
 One success out of twenty, and it went to the setting with the *least*
 memory. That goldfish was lucky: after 98 actions of wandering it happened to
-turn toward the open door, saw `>8 m`, and drove at it. Five runs can't rank
-anything, and I'm not going to pretend they do. What they show clearly is
+turn toward the open door, saw `>8 m`, and drove at it. Five runs are not statistically relevant  . What they show clearly is
 *how* the agent fails, and it failed the same way with every memory.
 
 <div data-robot-replay="{{ '/assets/robot-agent/runs/v1-full-h047-r3.json' | relative_url }},{{ '/assets/robot-agent/runs/v1-notebook-h047-r2.json' | relative_url }}"
@@ -702,8 +700,7 @@ Everything in this post, 85 agent runs in nine batches, cost **$4.90**.
   with clear and farthest, the model doesn't know *where* in a 45-degree slice
   a gap is.
 * No odometry, except in the one setting that adds it.
-* Model: Claude Haiku 5.5 (`claude-haiku-5-5`), medium effort. All runs on 20
-  and 21 November 2026.
+* Model: Claude Haiku 5.5 (`claude-haiku-5-5`), medium effort.
 * The code, seeds, transcripts and notes are all published in the repository.
 
 ## What I take away

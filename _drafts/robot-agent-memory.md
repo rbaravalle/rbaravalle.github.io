@@ -592,7 +592,51 @@ at its far left end. The exit can be seen from 0.4% of the right room's floor
 and from nowhere else outside the top room. The wall follower explores the dead
 end and the right room on the way, and needs 465 actions.
 
-TODO: results (8-direction scan, clear + farthest; several runs per setting).
+This time one run per setting wasn't enough: the question is about
+differences between settings, and one run is mostly luck. I ran one first, to
+see what it cost (21 cents), then two more, for three runs per setting, with
+the 8-direction scan (clear + farthest).
+
+| | got out | actions, each run | times into the right room |
+|---|---|---|---|
+| wall follower | 0 of 1 | 200 (needs 465) | 0 (lost in the dead end) |
+| goldfish | 2 of 3 | 84, 78, 200 | 4, 4, 7 |
+| window | 3 of 3 | 144, 199, 23 | 7, 11, 1 |
+| notebook | 3 of 3 | 58, 168, 64 | 5, 6, 3 |
+| full history | 3 of 3 | 16, 89, 87 | 1, 4, 2 |
+| odometry | 2 of 3 | 200, 50, 59 | 9, 2, 2 |
+
+<div data-robot-replay="{{ '/assets/robot-agent/runs/v8-full-h886-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v8-window-h886-r1.json' | relative_url }},{{ '/assets/robot-agent/runs/v8-odometry-h886-r0.json' | relative_url }},{{ '/assets/robot-agent/runs/v8-wall-h886-r0.json' | relative_url }}"
+     data-labels="Full history, 16 actions (round 8),Window, 199 actions (round 8),Odometry, ran out (round 8),Wall follower (round 8)"></div>
+
+The trap turned out to be the right-hand room, not the dead end. Its door up
+to the top room is easy to miss, and run after run the robot went into the
+right room, didn't find that door, came back to the start room, and tried
+again. The last column counts those trips.
+
+Here, finally, the agents beat the wall follower: 13 of the 15 runs got out,
+while the wall follower spent 97 actions in the dead end and ran out of
+steps. But between the memory settings there is still no clear winner. The
+spread *within* a setting is bigger than the differences *between* them: the
+window got out in 23 actions once and in 199 another time. There is a hint,
+no more: the two settings that see everything (full history and odometry)
+usually needed two trips into the right room, the others four to seven. One
+odometry run still made nine.
+
+And the transcripts show why more memory didn't help more. The agents do
+notice the loop, and say so:
+
+> Step 133: loops between spots A/B (front-back 1m). Front/back views ~3-4m
+> but walls appear after 1m. [...] Avoid repeating back-and-forth; if stuck,
+> try a new direction with long farthest.
+
+That notebook run then kept doing what it did on every step, driving toward
+the most open direction, and took 168 actions. The odometry run that failed
+had its position after every action and made nine trips, and it used that
+position once, at action 140 ("the back direction, which heads toward the area
+near (0, -3)"), after saying that the scans "keep leading back into the same
+cramped pocket". Memory lets the robot see that it's going in circles.
+It doesn't give it a way to stop.
 
 ## What it costs
 
@@ -612,20 +656,21 @@ The most expensive batches of all were the two that read all 72 rays: $1.08
 for five runs in round 6 and $0.85 in round 7, because each action thought
 three to five times as much as with the summary.
 
-Everything in this post, 70 agent runs in eight batches, cost **$4.36**.
+Everything in this post, 85 agent runs in nine batches, cost **$4.90**.
 
 ## Limitations
 
 * This is a learning experiment, not a claim that language models navigate
   well or badly in general. One small model, one prompt, one house for most of
   it.
-* Very few runs: five per setting in round 1, one per setting after that.
-  Enough to see *how* it behaves, not to rank the settings. In particular, I
-  can't say from one run each that full history beats the goldfish in round 3.
-* None of the houses really tested memory once the robot could see gaps. In
-  houses 47 and 287 the exit was visible from the start room, through
-  doorways in a row; house 260 has no dead end. A house whose exit stays
-  hidden until the last room is still to come.
+* Very few runs: five per setting in round 1, three in round 8, one in the
+  others. Enough to see *how* it behaves, not to rank the settings. Three
+  runs can't confirm the hint in round 8.
+* Only one house (886) really tested memory. In houses 47 and 287 the exit
+  was visible from the start room, through doorways in a row; house 260 has no
+  dead end. And even house 886 lets the exit be seen from a sliver of one
+  room: with doors this wide, an exit hidden from everywhere is rare (1 house
+  in 400).
 * Rounds 6 and 7 depend on how I explained the 72 rays. A better explanation,
   or a stronger model, might read them faster and more cheaply than Haiku
   did with mine.
@@ -635,7 +680,7 @@ Everything in this post, 70 agent runs in eight batches, cost **$4.36**.
   a gap is.
 * No odometry, except in the one setting that adds it.
 * Model: Claude Haiku 5.5 (`claude-haiku-5-5`), medium effort. All runs on 20
-  November 2026.
+  and 21 November 2026.
 * The code, seeds, transcripts and notes are all published in the repository.
 
 ## What I take away
@@ -649,8 +694,15 @@ In short:
    explained how to read them, and then cost twelve times as much as my
    8-direction summary, for a worse result. Data shaped for driving beat raw
    data.
-3. **Memory: TODO after round 8.** Until then there was no winner, because in
-   every house the robot could see the exit from far away.
+3. **Memory didn't decide much, even when it should have.** Where the exit
+   was visible from far away, memory didn't matter at all. Where it was
+   hidden (round 8), there was still no clear winner: the variation from run
+   to run was bigger than the differences between settings, with only a hint
+   that seeing everything helps. The agents noticed their loops, but their
+   strategy ("drive toward the most open direction") had no use for that.
+   Remembering where you've been only helps if you have a plan that uses it,
+   and that plan, systematic exploration, is one more thing a robotics stack
+   writes by hand.
 
 
 I wanted to try an AI agent on a simple robotic task for the first time, as a first step.
